@@ -1,0 +1,27 @@
+import { Strategy } from 'passport-local';
+import { PassportStrategy } from '@nestjs/passport';
+import {
+  BadRequestException,
+  Injectable,
+  UnauthorizedException,
+  UseFilters,
+} from '@nestjs/common';
+import { AuthService } from '../auths.service';
+@UseFilters()
+@Injectable()
+export class LocalStrategy extends PassportStrategy(Strategy) {
+  constructor(private authService: AuthService) {
+    super();
+  }
+
+  async validate(username: string, password: string): Promise<any> {
+    const user = await this.authService.validateUser(username, password);
+    if (!user) {
+      throw new UnauthorizedException('Invalid Username/Password');
+    }
+    if (user.isActive === false) {
+      throw new BadRequestException('Account not activated');
+    }
+    return user;
+  }
+}

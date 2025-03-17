@@ -20,7 +20,11 @@ import { UserAddressModule } from './core/user-address/user-address.module';
 import { UserReviewModule } from './core/user-review/user-review.module';
 import { VariationModule } from './core/variation/variation.module';
 import { VariationOptionModule } from './core/variation_option/variation_option.module';
-
+import { MailerModule } from '@nestjs-modules/mailer';
+import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
+import { APP_GUARD } from '@nestjs/core';
+import { JwtAuthGuard } from './auths/passport/jwt-auth.guard';
+import { AuthsModule } from './auths/auths.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -40,6 +44,7 @@ import { VariationOptionModule } from './core/variation_option/variation_option.
     UserReviewModule,
     VariationModule,
     VariationOptionModule,
+    AuthsModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
@@ -49,8 +54,39 @@ import { VariationOptionModule } from './core/variation_option/variation_option.
       }),
       inject: [ConfigService],
     }),
+    MailerModule.forRootAsync({
+      imports: [ConfigModule],
+      useFactory: async (configService: ConfigService) => ({
+        transport: {
+          host: 'smtp.gmail.com',
+          port: 465,
+          secure: true,
+          auth: {
+            user: configService.get<string>('MAIL_USER'),
+            pass: configService.get<string>('MAIL_PASSWORD'),
+          },
+        },
+        defaults: {
+          from: '"No Reply" <no-reply@localhost>',
+        },
+        template: {
+          dir: process.cwd() + '/src/mail/templates/',
+          adapter: new HandlebarsAdapter(),
+          options: {
+            strict: true,
+          },
+        },
+      }),
+      inject: [ConfigService],
+    }),
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+    AppService,
+    {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    },
+  ],
 })
 export class AppModule {}

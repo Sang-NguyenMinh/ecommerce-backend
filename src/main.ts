@@ -21,7 +21,7 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: true, // auto remove redundant data fields
+      whitelist: false, // auto remove redundant data fields
       forbidNonWhitelisted: true, //throw exception when client sends excess data fields
     }),
   );

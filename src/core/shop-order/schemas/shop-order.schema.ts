@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Types } from 'mongoose';
-import { OrderStatusEnum, PaymentTypeEnum } from 'src/config/type';
+import { OrderStatusEnum, PaymentTypeEnum } from 'src/config/constants';
 import { ShippingMethod } from 'src/core/shipping-method/schemas/shipping-method.scheme';
 import { UserAddress } from 'src/core/user-address/schemas/user-address.schema';
 import { User } from 'src/core/user/schemas/user.schema';
