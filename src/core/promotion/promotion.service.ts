@@ -1,23 +1,46 @@
-import { Injectable } from '@nestjs/common';
-import { CreatePromotionDto } from './dto/create-promotion.dto';
-import { UpdatePromotionDto } from './dto/update-promotion.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Promotion } from './schemas/promotion.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
 
 @Injectable()
 export class PromotionService {
-  create(createPromotionDto: CreatePromotionDto) {
-    return 'This action adds a new promotion';
+  constructor(
+    @InjectModel(Promotion.name) private promotionModel: Model<Promotion>,
+  ) {}
+
+  async create(createPromotionDto: CreatePromotionDto): Promise<Promotion> {
+    const newPromotion = new this.promotionModel(createPromotionDto);
+    return newPromotion.save();
+  }
+
+  async findOne(id: string): Promise<Promotion> {
+    const promotion = await this.promotionModel.findById(id);
+    if (!promotion) {
+      throw new NotFoundException('Promotion not found');
+    }
+    return promotion;
+  }
+
+  async update(updatePromotionDto: UpdatePromotionDto): Promise<Promotion> {
+    const { id, ...updateData } = updatePromotionDto;
+    const updatedPromotion = await this.promotionModel.findByIdAndUpdate(
+      id,
+      updateData,
+      {
+        new: true,
+        runValidators: true,
+      },
+    );
+    if (!updatedPromotion) {
+      throw new NotFoundException('Promotion not found');
+    }
+    return updatedPromotion;
   }
 
   findAll() {
     return `This action returns all promotion`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} promotion`;
-  }
-
-  update(id: number, updatePromotionDto: UpdatePromotionDto) {
-    return `This action updates a #${id} promotion`;
   }
 
   remove(id: number) {

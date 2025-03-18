@@ -1,23 +1,43 @@
-import { Injectable } from '@nestjs/common';
-import { CreateVariationDto } from './dto/create-variation.dto';
-import { UpdateVariationDto } from './dto/update-variation.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Variation } from './schemas/variation.schema';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
 
 @Injectable()
 export class VariationService {
-  create(createVariationDto: CreateVariationDto) {
-    return 'This action adds a new variation';
+  constructor(
+    @InjectModel(Variation.name) private variationModel: Model<Variation>,
+  ) {}
+
+  async create(createVariationDto: CreateVariationDto): Promise<Variation> {
+    const newVariation = new this.variationModel(createVariationDto);
+    return newVariation.save();
+  }
+
+  async update(updateVariationDto: UpdateVariationDto): Promise<Variation> {
+    const { id, ...updateData } = updateVariationDto;
+    const updatedVariation = await this.variationModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true },
+    );
+    if (!updatedVariation) {
+      throw new NotFoundException('Variation not found');
+    }
+    return updatedVariation;
+  }
+
+  async findOne(id: string): Promise<Variation> {
+    const variation = await this.variationModel.findById(id);
+    if (!variation) {
+      throw new NotFoundException('Variation not found');
+    }
+    return variation;
   }
 
   findAll() {
     return `This action returns all variation`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} variation`;
-  }
-
-  update(id: number, updateVariationDto: UpdateVariationDto) {
-    return `This action updates a #${id} variation`;
   }
 
   remove(id: number) {

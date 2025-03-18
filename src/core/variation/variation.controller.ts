@@ -1,12 +1,23 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { VariationService } from './variation.service';
-import { CreateVariationDto } from './dto/create-variation.dto';
-import { UpdateVariationDto } from './dto/update-variation.dto';
+import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
+import { Roles } from 'src/decorators/customize';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('variation')
 export class VariationController {
   constructor(private readonly variationService: VariationService) {}
 
+  @Roles('Admin')
   @Post()
   create(@Body() createVariationDto: CreateVariationDto) {
     return this.variationService.create(createVariationDto);
@@ -19,12 +30,15 @@ export class VariationController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.variationService.findOne(+id);
+    return this.variationService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateVariationDto: UpdateVariationDto) {
-    return this.variationService.update(+id, updateVariationDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateVariationDto: UpdateVariationDto,
+  ) {
+    return this.variationService.update(updateVariationDto);
   }
 
   @Delete(':id')

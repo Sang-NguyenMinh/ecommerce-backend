@@ -25,7 +25,7 @@ export class CreateProductDto {
   description?: string;
 
   @ApiPropertyOptional({
-    example: '67d971f262e030181551f4dd',
+    example: '67d99c4c23ddec1193fe79d0',
     description: 'Category ID',
   })
   @IsOptional()
@@ -66,7 +66,7 @@ export class UpdateProductDto {
   description?: string;
 
   @ApiPropertyOptional({
-    example: '60d5f9b4f8e4a822d8a5f9b2',
+    example: '67d99c4c23ddec1193fe79d0',
     description: 'Category ID',
   })
   @IsOptional()

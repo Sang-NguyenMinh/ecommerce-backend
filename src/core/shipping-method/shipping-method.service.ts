@@ -1,23 +1,52 @@
-import { Injectable } from '@nestjs/common';
-import { CreateShippingMethodDto } from './dto/create-shipping-method.dto';
-import { UpdateShippingMethodDto } from './dto/update-shipping-method.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { ShippingMethod } from './schemas/shipping-method.scheme';
+import {
+  CreateShippingMethodDto,
+  UpdateShippingMethodDto,
+} from './dto/shipping-method.dto';
+import { Model } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
 
 @Injectable()
 export class ShippingMethodService {
-  create(createShippingMethodDto: CreateShippingMethodDto) {
-    return 'This action adds a new shippingMethod';
+  constructor(
+    @InjectModel(ShippingMethod.name)
+    private shippingMethodModel: Model<ShippingMethod>,
+  ) {}
+
+  async create(
+    createShippingMethodDto: CreateShippingMethodDto,
+  ): Promise<ShippingMethod> {
+    const newShippingMethod = new this.shippingMethodModel(
+      createShippingMethodDto,
+    );
+    return newShippingMethod.save();
+  }
+
+  async update(
+    updateShippingMethodDto: UpdateShippingMethodDto,
+  ): Promise<ShippingMethod> {
+    const { id, ...updateData } = updateShippingMethodDto;
+    const updatedShippingMethod =
+      await this.shippingMethodModel.findByIdAndUpdate(id, updateData, {
+        new: true,
+      });
+    if (!updatedShippingMethod) {
+      throw new NotFoundException('Shipping method not found');
+    }
+    return updatedShippingMethod;
+  }
+
+  async findOne(id: string): Promise<ShippingMethod> {
+    const shippingMethod = await this.shippingMethodModel.findById(id);
+    if (!shippingMethod) {
+      throw new NotFoundException('Shipping method not found');
+    }
+    return shippingMethod;
   }
 
   findAll() {
     return `This action returns all shippingMethod`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} shippingMethod`;
-  }
-
-  update(id: number, updateShippingMethodDto: UpdateShippingMethodDto) {
-    return `This action updates a #${id} shippingMethod`;
   }
 
   remove(id: number) {

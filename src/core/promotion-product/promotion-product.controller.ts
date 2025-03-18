@@ -1,12 +1,28 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { PromotionProductService } from './promotion-product.service';
-import { CreatePromotionProductDto } from './dto/create-promotion-product.dto';
-import { UpdatePromotionProductDto } from './dto/update-promotion-product.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/customize';
+import {
+  CreatePromotionProductDto,
+  UpdatePromotionProductDto,
+} from './dto/promotion-product.dto';
 
+@ApiBearerAuth()
 @Controller('promotion-product')
 export class PromotionProductController {
-  constructor(private readonly promotionProductService: PromotionProductService) {}
+  constructor(
+    private readonly promotionProductService: PromotionProductService,
+  ) {}
 
+  @Roles('Admin')
   @Post()
   create(@Body() createPromotionProductDto: CreatePromotionProductDto) {
     return this.promotionProductService.create(createPromotionProductDto);
@@ -19,12 +35,15 @@ export class PromotionProductController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.promotionProductService.findOne(+id);
+    return this.promotionProductService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updatePromotionProductDto: UpdatePromotionProductDto) {
-    return this.promotionProductService.update(+id, updatePromotionProductDto);
+  update(
+    @Param('id') id: string,
+    @Body() updatePromotionProductDto: UpdatePromotionProductDto,
+  ) {
+    return this.promotionProductService.update(updatePromotionProductDto);
   }
 
   @Delete(':id')

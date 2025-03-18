@@ -16,6 +16,9 @@ export class ProductItem {
   price: number;
 
   @Prop()
+  images: string[];
+
+  @Prop()
   qtyInStock: number;
 }
 

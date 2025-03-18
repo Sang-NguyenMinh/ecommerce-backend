@@ -1,8 +1,20 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+} from '@nestjs/common';
 import { UserReviewService } from './user-review.service';
-import { CreateUserReviewDto } from './dto/create-user-review.dto';
-import { UpdateUserReviewDto } from './dto/update-user-review.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import {
+  CreateUserReviewDto,
+  UpdateUserReviewDto,
+} from './dto/user-review.dto';
 
+@ApiBearerAuth()
 @Controller('user-review')
 export class UserReviewController {
   constructor(private readonly userReviewService: UserReviewService) {}
@@ -19,12 +31,15 @@ export class UserReviewController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.userReviewService.findOne(+id);
+    return this.userReviewService.findOne(id);
   }
 
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateUserReviewDto: UpdateUserReviewDto) {
-    return this.userReviewService.update(+id, updateUserReviewDto);
+  update(
+    @Param('id') id: string,
+    @Body() updateUserReviewDto: UpdateUserReviewDto,
+  ) {
+    return this.userReviewService.update(updateUserReviewDto);
   }
 
   @Delete(':id')

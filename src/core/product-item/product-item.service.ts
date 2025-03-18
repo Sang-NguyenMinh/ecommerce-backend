@@ -1,23 +1,57 @@
-import { Injectable } from '@nestjs/common';
-import { CreateProductItemDto } from './dto/create-product-item.dto';
-import { UpdateProductItemDto } from './dto/update-product-item.dto';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { ProductItem } from './schemas/product-item.schema';
+import { Model } from 'mongoose';
+import {
+  CreateProductItemDto,
+  UpdateProductItemDto,
+} from './dto/product-item.dto';
 
 @Injectable()
 export class ProductItemService {
-  create(createProductItemDto: CreateProductItemDto) {
-    return 'This action adds a new productItem';
+  constructor(
+    @InjectModel(ProductItem.name)
+    private readonly productItemModel: Model<ProductItem>,
+  ) {}
+
+  async create(
+    createProductItemDto: CreateProductItemDto,
+  ): Promise<ProductItem> {
+    const newProductItem = new this.productItemModel(createProductItemDto);
+    return newProductItem.save();
+  }
+
+  async update(
+    updateProductItemDto: UpdateProductItemDto,
+  ): Promise<ProductItem> {
+    const { id, ...updateData } = updateProductItemDto;
+    const updatedProductItem = await this.productItemModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true },
+    );
+
+    if (!updatedProductItem) {
+      throw new NotFoundException('Product item not found');
+    }
+
+    return updatedProductItem;
+  }
+
+  async findOne(id: string): Promise<ProductItem> {
+    const productItem = await this.productItemModel
+      .findById(id)
+      .populate('productId');
+
+    if (!productItem) {
+      throw new NotFoundException('Product item not found');
+    }
+
+    return productItem;
   }
 
   findAll() {
     return `This action returns all productItem`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} productItem`;
-  }
-
-  update(id: number, updateProductItemDto: UpdateProductItemDto) {
-    return `This action updates a #${id} productItem`;
   }
 
   remove(id: number) {
