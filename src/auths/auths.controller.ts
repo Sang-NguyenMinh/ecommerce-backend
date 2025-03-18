@@ -6,6 +6,7 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { CreateUserDto } from 'src/core/user/dto/users.dto';
 import { ChangePasswordAuthDto, CodeAuthDto } from './dto/auths.dto';
 import { UserService } from 'src/core/user/user.service';
+import { ApiBody } from '@nestjs/swagger';
 
 @Controller('auth')
 export class AuthsController {
@@ -15,6 +16,16 @@ export class AuthsController {
     private readonly userService: UserService,
   ) {}
 
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        username: { type: 'string', example: 'nmsang.dev@gmail.com' },
+        password: { type: 'string', example: 'Admin@123' },
+      },
+      required: ['username', 'password'],
+    },
+  })
   @UseGuards(AuthGuard('local'))
   @Public()
   @Post('login')

@@ -1,23 +1,45 @@
-import { Injectable } from '@nestjs/common';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { CloudinaryService } from './../../shared/cloudinary.service';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import { Product } from './schemas/product.schema';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 
 @Injectable()
 export class ProductService {
-  create(createProductDto: CreateProductDto) {
-    return 'This action adds a new product';
+  constructor(
+    @InjectModel(Product.name)
+    private productModel: Model<Product>,
+  ) {}
+
+  async create(createProductDto: CreateProductDto): Promise<Product> {
+    const newProduct = new this.productModel(createProductDto);
+    return newProduct.save();
+  }
+
+  async update(updateProductDto: UpdateProductDto): Promise<Product> {
+    const { id, ...updateData } = updateProductDto;
+    const updatedProduct = await this.productModel.findByIdAndUpdate(
+      id,
+      updateData,
+      { new: true, runValidators: true },
+    );
+    if (!updatedProduct) {
+      throw new NotFoundException('Product not found');
+    }
+    return updatedProduct;
+  }
+
+  async findOne(id: string): Promise<Product> {
+    const product = await this.productModel.findById(id).populate('categoryId');
+    if (!product) {
+      throw new NotFoundException('Product not found');
+    }
+    return product;
   }
 
   findAll() {
     return `This action returns all product`;
-  }
-
-  findOne(id: number) {
-    return `This action returns a #${id} product`;
-  }
-
-  update(id: number, updateProductDto: UpdateProductDto) {
-    return `This action updates a #${id} product`;
   }
 
   remove(id: number) {

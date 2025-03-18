@@ -5,7 +5,7 @@ export type ProductCategoryDocument = HydratedDocument<ProductCategory>;
 
 @Schema()
 export class ProductCategory {
-  @Prop()
+  @Prop({ unique: true })
   categoryName: string;
 
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name, default: null })

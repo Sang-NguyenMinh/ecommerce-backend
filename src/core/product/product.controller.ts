@@ -1,15 +1,43 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  UseInterceptors,
+  UploadedFile,
+} from '@nestjs/common';
 import { ProductService } from './product.service';
-import { CreateProductDto } from './dto/create-product.dto';
-import { UpdateProductDto } from './dto/update-product.dto';
+import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { CloudinaryService } from 'src/shared/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { Roles } from 'src/decorators/customize';
 
+@ApiBearerAuth()
 @Controller('product')
 export class ProductController {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
+  @Roles('Admin')
+  @ApiConsumes('multipart/form-data')
   @Post()
-  create(@Body() createProductDto: CreateProductDto) {
-    return this.productService.create(createProductDto);
+  @UseInterceptors(FileInterceptor('thumbnail'))
+  async create(
+    @Body() createProductDto: CreateProductDto,
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    const uploadedImage = await this.cloudinaryService.uploadImage(file);
+
+    return this.productService.create({
+      ...createProductDto,
+      thumbnail: uploadedImage.secure_url,
+    });
   }
 
   @Get()
@@ -19,12 +47,24 @@ export class ProductController {
 
   @Get(':id')
   findOne(@Param('id') id: string) {
-    return this.productService.findOne(+id);
+    return this.productService.findOne(id);
   }
 
-  @Patch(':id')
-  update(@Param('id') id: string, @Body() updateProductDto: UpdateProductDto) {
-    return this.productService.update(+id, updateProductDto);
+  @UseInterceptors(FileInterceptor('thumbnail'))
+  @Roles('Admin')
+  @ApiConsumes('multipart/form-data')
+  @Patch()
+  async update(
+    @Body() updateProductDto: UpdateProductDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    let updatedData = { ...updateProductDto };
+
+    if (file) {
+      const uploadedImage = await this.cloudinaryService.uploadImage(file);
+      updatedData.thumbnail = uploadedImage.secure_url;
+    }
+    return this.productService.update(updatedData);
   }
 
   @Delete(':id')

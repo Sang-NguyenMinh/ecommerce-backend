@@ -13,10 +13,13 @@ export class CloudinaryService {
   }
   async uploadImage(file: Express.Multer.File): Promise<CloudinaryResponse> {
     return new Promise((resolve, reject) => {
-      const upload = cloudinary.uploader.upload_stream((error, result) => {
-        if (error) return reject(error);
-        resolve(result);
-      });
+      const upload = cloudinary.uploader.upload_stream(
+        { folder: 'e-commerce' },
+        (error, result) => {
+          if (error) return reject(error);
+          resolve(result);
+        },
+      );
 
       const buffer = file.buffer;
       const stream = require('stream');
