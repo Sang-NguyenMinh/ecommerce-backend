@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsMongoId, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsMongoId, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
 export class CreateProductCategoryDto {
@@ -16,17 +16,17 @@ export class CreateProductCategoryDto {
   })
   @IsOptional()
   @IsMongoId()
-  parentCategoryId?: Types.ObjectId;
+  parentCategory?: Types.ObjectId;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Status of the product category (active/inactive)',
+  })
+  @IsOptional()
+  status?: boolean;
 }
 
 export class UpdateProductCategoryDto {
-  @ApiProperty({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'ID of the product category to update',
-  })
-  @IsMongoId()
-  id: string;
-
   @ApiPropertyOptional({
     example: 'Smartphones',
     description: 'New category name (if you want to update)',
@@ -41,5 +41,12 @@ export class UpdateProductCategoryDto {
   })
   @IsOptional()
   @IsMongoId()
-  parentCategoryId?: Types.ObjectId;
+  parentCategory?: Types.ObjectId;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Status of the product category (active/inactive)',
+  })
+  @IsOptional()
+  status?: boolean;
 }

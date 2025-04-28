@@ -5,14 +5,15 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { User } from './schemas/user.schema';
-import { Model } from 'mongoose';
+import { User, UserDocument } from './schemas/user.schema';
+import { FilterQuery, Model } from 'mongoose';
 import { BcryptService } from 'src/shared/bcrypt.service';
 import { MailerService } from '@nestjs-modules/mailer';
 import { CreateUserDto, UpdateUserDto } from './dto/users.dto';
 import { v4 as uuidv4 } from 'uuid';
 import dayjs from 'dayjs';
 import { ChangePasswordAuthDto, CodeAuthDto } from 'src/auths/dto/auths.dto';
+import { CustomOptions } from 'src/config/types';
 @Injectable()
 export class UserService {
   constructor(
@@ -21,6 +22,18 @@ export class UserService {
     private readonly bcryptService: BcryptService,
     private readonly mailerService: MailerService,
   ) {}
+
+  async findOne(
+    conditions: FilterQuery<UserDocument> = {},
+    options: CustomOptions<UserDocument> = {},
+  ) {
+    const user = await this.userModel.findOne(
+      { ...conditions },
+      options.fields,
+    );
+    console.log(user);
+    return user;
+  }
 
   async create(createUserDto: CreateUserDto) {
     createUserDto.password = await this.bcryptService.hashPassword(

@@ -2,8 +2,9 @@ import { CloudinaryService } from './../../shared/cloudinary.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './schemas/product.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class ProductService {
@@ -38,8 +39,21 @@ export class ProductService {
     return product;
   }
 
-  findAll() {
-    return `This action returns all product`;
+  async findAll(
+    filter?: FilterQuery<Product>,
+    options?: CustomOptions<Product>,
+  ): Promise<{ products: Product[]; total: number }> {
+    const total = await this.productModel.countDocuments({ ...filter });
+
+    const products = await this.productModel
+      .find({ ...filter }, { ...options })
+      .populate('categoryId')
+      .exec();
+
+    return {
+      products,
+      total,
+    };
   }
 
   remove(id: number) {

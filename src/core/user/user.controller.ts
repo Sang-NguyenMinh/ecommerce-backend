@@ -9,7 +9,10 @@ import {
 } from '@nestjs/common';
 import { UserService } from './user.service';
 import { CreateUserDto, UpdateUserDto } from './dto/users.dto';
+import { CurrentUser, Public, Roles } from 'src/decorators/customize';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
 @Controller('user')
 export class UserController {
   constructor(private readonly userService: UserService) {}
@@ -20,10 +23,13 @@ export class UserController {
   }
 
   @Get()
-  findAll() {}
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {}
+  findOne(@CurrentUser() reqUser) {
+    const user = this.userService.findOne(
+      { _id: reqUser._id },
+      { fields: ['username', 'phone', 'avatar', 'role', 'createdAt'] },
+    );
+    return user;
+  }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {}

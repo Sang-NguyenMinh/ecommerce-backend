@@ -10,10 +10,10 @@ export class Product {
   productName: string;
 
   @Prop()
-  thumbnail?: string;
+  thumbnails?: any[];
 
   @Prop()
-  description?: string;
+  content?: string;
 
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name, default: null })
   categoryId?: Types.ObjectId;

@@ -8,12 +8,13 @@ import {
   Delete,
   UseInterceptors,
   UploadedFile,
+  UploadedFiles,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/decorators/customize';
 
 @ApiBearerAuth()
@@ -24,20 +25,27 @@ export class ProductController {
     private cloudinaryService: CloudinaryService,
   ) {}
 
+  @Post()
   @Roles('Admin')
   @ApiConsumes('multipart/form-data')
-  @Post()
-  @UseInterceptors(FileInterceptor('thumbnail'))
+  @UseInterceptors(FilesInterceptor('thumbnails'))
   async create(
     @Body() createProductDto: CreateProductDto,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const uploadedImage = await this.cloudinaryService.uploadImage(file);
+    try {
+      console.log(files);
+      const uploadedImages = await Promise.all(
+        (files ?? []).map((file) => this.cloudinaryService.uploadImage(file)),
+      );
 
-    return this.productService.create({
-      ...createProductDto,
-      thumbnail: uploadedImage.secure_url,
-    });
+      return this.productService.create({
+        ...createProductDto,
+        thumbnails: uploadedImages.map((img) => img.secure_url),
+      });
+    } catch (error) {
+      console.log(error);
+    }
   }
 
   @Get()
@@ -62,7 +70,7 @@ export class ProductController {
 
     if (file) {
       const uploadedImage = await this.cloudinaryService.uploadImage(file);
-      updatedData.thumbnail = uploadedImage.secure_url;
+      updatedData.thumbnails = uploadedImage.secure_url;
     }
     return this.productService.update(updatedData);
   }

@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { ProductItem } from './schemas/product-item.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   CreateProductItemDto,
   UpdateProductItemDto,
 } from './dto/product-item.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class ProductItemService {
@@ -50,8 +51,20 @@ export class ProductItemService {
     return productItem;
   }
 
-  findAll() {
-    return `This action returns all productItem`;
+  async findAll(
+    filter?: FilterQuery<ProductItem>,
+    options?: CustomOptions<ProductItem>,
+  ) {
+    const total = await this.productItemModel.countDocuments({ ...filter });
+
+    const productItems = await this.productItemModel
+      .find({ ...filter }, { ...options })
+      .exec();
+
+    return {
+      productItems,
+      total,
+    };
   }
 
   remove(id: number) {

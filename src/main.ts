@@ -6,14 +6,12 @@ import { ConfigService } from '@nestjs/config';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
-
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
 
   const configService = app.get(ConfigService);
 
   const port = configService.get('PORT');
-
   const httpAdapter = app.get(HttpAdapterHost);
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
@@ -21,10 +19,11 @@ async function bootstrap() {
 
   app.useGlobalPipes(
     new ValidationPipe({
-      whitelist: false, // auto remove redundant data fields
-      forbidNonWhitelisted: true, //throw exception when client sends excess data fields
+      whitelist: false,
+      forbidNonWhitelisted: true,
     }),
   );
+  app.enableCors();
 
   const config = new DocumentBuilder()
     .setTitle('API Documentation')

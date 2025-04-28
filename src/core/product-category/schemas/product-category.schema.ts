@@ -9,7 +9,10 @@ export class ProductCategory {
   categoryName: string;
 
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name, default: null })
-  parentCategoryId?: Types.ObjectId;
+  parentCategory?: Types.ObjectId;
+
+  @Prop({ default: true })
+  status?: boolean;
 }
 
 export const ProductCategorySchema =

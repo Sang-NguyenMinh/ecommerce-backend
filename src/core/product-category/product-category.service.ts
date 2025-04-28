@@ -1,21 +1,25 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { ProductCategory } from './schemas/product-category.schema';
-import { Model, Types } from 'mongoose';
+import { FilterQuery, Model, QueryOptions, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateProductCategoryDto,
   UpdateProductCategoryDto,
 } from './dto/product-category.dto';
+import { CustomOptions } from 'src/config/types';
+import { ProductService } from '../product/product.service';
 
 @Injectable()
 export class ProductCategoryService {
   constructor(
     @InjectModel(ProductCategory.name)
     private productCategoryModel: Model<ProductCategory>,
+    private productService: ProductService,
   ) {}
 
   async create(dto: CreateProductCategoryDto): Promise<ProductCategory> {
@@ -39,9 +43,11 @@ export class ProductCategoryService {
     }
     return category;
   }
-
-  async update(dto: UpdateProductCategoryDto): Promise<ProductCategory> {
-    const { id, ...updateData } = dto;
+  async update(
+    id: string,
+    dto: UpdateProductCategoryDto,
+  ): Promise<ProductCategory> {
+    const { ...updateData } = dto;
 
     const updatedCategory = await this.productCategoryModel
       .findByIdAndUpdate(id, updateData, { new: true })
@@ -54,11 +60,53 @@ export class ProductCategoryService {
     return updatedCategory;
   }
 
-  findAll() {
-    return `This action returns all productCategory`;
-  }
+  async findAll(
+    filter?: FilterQuery<ProductCategory>,
+    options?: CustomOptions<ProductCategory>,
+  ) {
+    const total = await this.productCategoryModel.countDocuments({ ...filter });
 
-  remove(id: number) {
-    return `This action removes a #${id} productCategory`;
+    const categories = await this.productCategoryModel
+      .find({ ...filter }, { ...options })
+      .populate('parentCategory')
+      .exec();
+
+    return {
+      categories,
+      total,
+    };
+  }
+  async remove(id: string) {
+    const category = await this.productCategoryModel.findById(id).exec();
+    if (!category) {
+      throw new NotFoundException('Danh mục không tồn tại');
+    }
+
+    const subCategories = await this.productCategoryModel.countDocuments({
+      parentCategory: id,
+    });
+    if (subCategories > 0) {
+      throw new BadRequestException(
+        'Không thể xóa vì có danh mục con tham chiếu tới danh mục này.',
+      );
+    }
+
+    const { total: productsUsingCategory } = await this.productService.findAll({
+      categoryId: id,
+    });
+
+    if (productsUsingCategory > 0) {
+      throw new BadRequestException(
+        'Không thể xóa vì có sản phẩm đang sử dụng danh mục này.',
+      );
+    }
+
+    const deleted = await this.productCategoryModel
+      .deleteOne({ _id: id })
+      .exec();
+
+    if (deleted.deletedCount === 0) {
+      throw new InternalServerErrorException('Lỗi khi xóa danh mục sản phẩm');
+    }
   }
 }

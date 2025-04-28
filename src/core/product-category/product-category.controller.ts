@@ -30,6 +30,7 @@ export class ProductCategoryController {
     return this.productCategoryService.create(createProductCategoryDto);
   }
 
+  @Public()
   @Get()
   findAll() {
     return this.productCategoryService.findAll();
@@ -46,11 +47,13 @@ export class ProductCategoryController {
     @Param('id') id: string,
     @Body() updateProductCategoryDto: UpdateProductCategoryDto,
   ) {
-    return this.productCategoryService.update(updateProductCategoryDto);
+    return this.productCategoryService.update(id, {
+      ...updateProductCategoryDto,
+    });
   }
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productCategoryService.remove(+id);
+    return this.productCategoryService.remove(id);
   }
 }

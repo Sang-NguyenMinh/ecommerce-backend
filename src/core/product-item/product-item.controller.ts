@@ -8,19 +8,21 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  Query,
 } from '@nestjs/common';
 import { ProductItemService } from './product-item.service';
 import {
   CreateProductItemDto,
   UpdateProductItemDto,
 } from './dto/product-item.dto';
-import { Roles } from 'src/decorators/customize';
-import { ApiBearerAuth, ApiConsumes } from '@nestjs/swagger';
+import { Public, Roles } from 'src/decorators/customize';
+import { ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
 import {
   FileFieldsInterceptor,
   FilesInterceptor,
 } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
+import { Types } from 'mongoose';
 
 @ApiBearerAuth()
 @Controller('product-item')
@@ -51,9 +53,15 @@ export class ProductItemController {
     });
   }
 
+  @Public()
   @Get()
-  findAll() {
-    return this.productItemService.findAll();
+  @ApiQuery({ name: 'productId', required: false, type: String })
+  findAll(@Query('productId') productId?: string) {
+    const filter: { productId?: Types.ObjectId } = {};
+    if (productId) {
+      filter.productId = new Types.ObjectId(productId);
+    }
+    return this.productItemService.findAll(filter);
   }
 
   @Get(':id')

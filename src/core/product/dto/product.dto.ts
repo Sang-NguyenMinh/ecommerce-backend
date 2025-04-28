@@ -10,19 +10,18 @@ export class CreateProductDto {
 
   @ApiPropertyOptional({
     description: 'Product thumbnail file',
-    type: 'string',
     format: 'binary',
   })
   @IsOptional()
-  thumbnail?: any;
+  thumbnails?: any[];
 
   @ApiPropertyOptional({
     example: 'A beautiful T-shirt',
-    description: 'Product description',
+    description: 'Product content',
   })
   @IsOptional()
   @IsString()
-  description?: string;
+  content?: string;
 
   @ApiPropertyOptional({
     example: '67d99c4c23ddec1193fe79d0',
@@ -55,15 +54,15 @@ export class UpdateProductDto {
     format: 'binary',
   })
   @IsOptional()
-  thumbnail?: any;
+  thumbnails?: any;
 
   @ApiPropertyOptional({
     example: 'A beautiful bracelet for couples',
-    description: 'Product description',
+    description: 'Product content',
   })
   @IsOptional()
   @IsString()
-  description?: string;
+  content?: string;
 
   @ApiPropertyOptional({
     example: '67d99c4c23ddec1193fe79d0',

@@ -42,6 +42,7 @@ export class AllExceptionsFilter implements ExceptionFilter {
       exception instanceof HttpException
         ? exception.getStatus()
         : HttpStatus.INTERNAL_SERVER_ERROR;
+
     let message = 'Internal server error';
     let errors: string[] | null = null;
 
@@ -66,75 +67,43 @@ export class AllExceptionsFilter implements ExceptionFilter {
       errors = [exception.message];
     }
 
-    switch (true) {
-      case exception instanceof BadRequestException:
-        message = 'Bad Request';
+    // Map các ngoại lệ đến thông báo mặc định
+    const defaultMessages = new Map<Function, string>([
+      [BadRequestException, 'Bad Request'],
+      [UnauthorizedException, 'Unauthorized'],
+      [NotFoundException, 'Not Found'],
+      [ForbiddenException, 'Forbidden'],
+      [NotAcceptableException, 'Not Acceptable'],
+      [RequestTimeoutException, 'Request Timeout'],
+      [ConflictException, 'Conflict'],
+      [GoneException, 'Gone'],
+      [HttpVersionNotSupportedException, 'HTTP Version Not Supported'],
+      [PayloadTooLargeException, 'Payload Too Large'],
+      [UnsupportedMediaTypeException, 'Unsupported Media Type'],
+      [UnprocessableEntityException, 'Unprocessable Entity'],
+      [InternalServerErrorException, 'Internal Server Error'],
+      [NotImplementedException, 'Not Implemented'],
+      [ImATeapotException, "I'm a teapot"],
+      [MethodNotAllowedException, 'Method Not Allowed'],
+      [BadGatewayException, 'Bad Gateway'],
+      [ServiceUnavailableException, 'Service Unavailable'],
+      [GatewayTimeoutException, 'Gateway Timeout'],
+      [PreconditionFailedException, 'Precondition Failed'],
+    ]);
+
+    for (const [exceptionType, defaultMsg] of defaultMessages.entries()) {
+      if (exception instanceof exceptionType && !message) {
+        message = defaultMsg;
         break;
-      case exception instanceof UnauthorizedException:
-        message = 'Unauthorized';
-        break;
-      case exception instanceof NotFoundException:
-        message = 'Not Found';
-        break;
-      case exception instanceof ForbiddenException:
-        message = 'Forbidden';
-        break;
-      case exception instanceof NotAcceptableException:
-        message = 'Not Acceptable';
-        break;
-      case exception instanceof RequestTimeoutException:
-        message = 'Request Timeout';
-        break;
-      case exception instanceof ConflictException:
-        message = 'Conflict';
-        break;
-      case exception instanceof GoneException:
-        message = 'Gone';
-        break;
-      case exception instanceof HttpVersionNotSupportedException:
-        message = 'HTTP Version Not Supported';
-        break;
-      case exception instanceof PayloadTooLargeException:
-        message = 'Payload Too Large';
-        break;
-      case exception instanceof UnsupportedMediaTypeException:
-        message = 'Unsupported Media Type';
-        break;
-      case exception instanceof UnprocessableEntityException:
-        message = 'Unprocessable Entity';
-        break;
-      case exception instanceof InternalServerErrorException:
-        message = 'Internal Server Error';
-        break;
-      case exception instanceof NotImplementedException:
-        message = 'Not Implemented';
-        break;
-      case exception instanceof ImATeapotException:
-        message = "I'm a teapot";
-        break;
-      case exception instanceof MethodNotAllowedException:
-        message = 'Method Not Allowed';
-        break;
-      case exception instanceof BadGatewayException:
-        message = 'Bad Gateway';
-        break;
-      case exception instanceof ServiceUnavailableException:
-        message = 'Service Unavailable';
-        break;
-      case exception instanceof GatewayTimeoutException:
-        message = 'Gateway Timeout';
-        break;
-      case exception instanceof PreconditionFailedException:
-        message = 'Precondition Failed';
-        break;
+      }
     }
 
     const responseBody = {
       statusCode: status,
       timestamp: new Date().toISOString(),
-      path: httpAdapter.getRequestUrl(ctx.getRequest()),
-      message: message,
-      errors: errors,
+      path: httpAdapter.getRequestUrl(request),
+      message,
+      errors,
     };
 
     httpAdapter.reply(response, responseBody, status);

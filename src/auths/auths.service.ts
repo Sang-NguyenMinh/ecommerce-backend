@@ -1,13 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { BcryptService } from 'src/shared/bcrypt.service';
-import {
-  ChangePasswordAuthDto,
-  CodeAuthDto,
-  CreateAuthDto,
-} from './dto/auths.dto';
+import { ChangePasswordAuthDto, CodeAuthDto } from './dto/auths.dto';
 import { UserService } from 'src/core/user/user.service';
 import { CreateUserDto } from 'src/core/user/dto/users.dto';
+import { ConfigService } from '@nestjs/config';
+import { IToken } from 'src/config/types';
 
 @Injectable()
 export class AuthService {
@@ -15,6 +13,7 @@ export class AuthService {
     private userService: UserService,
     private readonly bcryptService: BcryptService,
     private jwtService: JwtService,
+    private configService: ConfigService,
   ) {}
 
   async validateUser(username: string, password: string): Promise<any> {
@@ -31,11 +30,32 @@ export class AuthService {
     return user;
   }
 
+  // async login(user: any) {
+  //   const payload = { email: user?.email, userId: user._id, role: user?.role };
+  //   return {
+  //     accessToken: this.jwtService.sign(payload, { expiresIn: '10d' }),
+  //   };
+  // }
+
   async login(user: any) {
-    const payload = { email: user?.email, sub: user._id, role: user?.role };
-    return {
-      accessToken: this.jwtService.sign(payload),
+    const payload = { email: user?.email, userId: user._id, role: user?.role };
+
+    const accessToken = this.jwtService.sign(payload, {
+      expiresIn: '10d',
+    });
+
+    const refreshToken = this.jwtService.sign(payload, {
+      expiresIn: '30d',
+      secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
+    });
+
+    const result: IToken = {
+      type: 'Bearer',
+      accessToken,
+      refreshToken,
     };
+
+    return result;
   }
 
   async loginWithGoogle(user: any) {
