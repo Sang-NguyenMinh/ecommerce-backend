@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Promotion } from './schemas/promotion.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class PromotionService {
@@ -38,12 +39,27 @@ export class PromotionService {
     }
     return updatedPromotion;
   }
+  async findAll(
+    filter?: FilterQuery<Promotion>,
+    options?: CustomOptions<Promotion>,
+  ): Promise<{ promotions: Promotion[]; total: number }> {
+    const total = await this.promotionModel.countDocuments({ ...filter });
 
-  findAll() {
-    return `This action returns all promotion`;
+    const promotions = await this.promotionModel
+      .find({ ...filter }, { ...options })
+      .exec();
+
+    return {
+      promotions,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} promotion`;
+  async remove(id: string) {
+    const promotion = await this.promotionModel.findByIdAndDelete(id);
+    if (!promotion) {
+      throw new NotFoundException('Promotion not found');
+    }
+    return promotion;
   }
 }

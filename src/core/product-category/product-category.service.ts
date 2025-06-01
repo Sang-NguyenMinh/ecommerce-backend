@@ -96,9 +96,7 @@ export class ProductCategoryService {
     });
 
     if (productsUsingCategory > 0) {
-      throw new BadRequestException(
-        'Không thể xóa vì có sản phẩm đang sử dụng danh mục này.',
-      );
+    
     }
 
     const deleted = await this.productCategoryModel

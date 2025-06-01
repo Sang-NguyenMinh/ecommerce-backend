@@ -1,4 +1,3 @@
-import { CloudinaryService } from './../../shared/cloudinary.service';
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Product } from './schemas/product.schema';
 import { InjectModel } from '@nestjs/mongoose';
@@ -56,7 +55,11 @@ export class ProductService {
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} product`;
+  async remove(id: string) {
+    try {
+      await this.productModel.deleteOne({ _id: id });
+    } catch {
+      throw new NotFoundException('Product not found');
+    }
   }
 }
