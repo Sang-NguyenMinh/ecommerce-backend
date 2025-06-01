@@ -40,6 +40,6 @@ export class PromotionController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.promotionService.remove(+id);
+    return this.promotionService.remove(id);
   }
 }

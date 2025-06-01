@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PromotionCategory } from './schemas/promotion-category.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   CreatePromotionCategoryDto,
   UpdatePromotionCategoryDto,
 } from './dto/promotion-category.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class PromotionCategoryService {
@@ -50,7 +51,19 @@ export class PromotionCategoryService {
     return { message: 'Promotion category deleted successfully' };
   }
 
-  findAll() {
-    return `This action returns all promotionCategory`;
+  async findAll(
+    filter?: FilterQuery<PromotionCategory>,
+    options?: CustomOptions<PromotionCategory>,
+  ): Promise<{ promotionCategories: PromotionCategory[]; total: number }> {
+    const total = await this.promotionCategoryModel.countDocuments({
+      ...filter,
+    });
+    const promotionCategories = await this.promotionCategoryModel
+      .find({ ...filter }, { ...options })
+      .exec();
+    return {
+      promotionCategories,
+      total,
+    };
   }
 }
