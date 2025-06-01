@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { UserAddress } from './schemas/user-address.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   CreateUserAddressDto,
   UpdateUserAddressDto,
 } from './dto/user-address.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class UserAddressService {
@@ -69,11 +70,27 @@ export class UserAddressService {
   async findByUser(userId: string): Promise<UserAddress[]> {
     return this.userAddressModel.find({ userId }).sort({ isDefault: -1 });
   }
-  findAll() {
-    return `This action returns all userAddress`;
+  async findAll(
+    filter?: FilterQuery<UserAddress>,
+    options?: CustomOptions<UserAddress>,
+  ): Promise<{ addresses: UserAddress[]; total: number }> {
+    const total = await this.userAddressModel.countDocuments({ ...filter });
+
+    const addresses = await this.userAddressModel
+      .find({ ...filter }, { ...options })
+      .populate('userId')
+      .exec();
+
+    return {
+      addresses,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} userAddress`;
+  async remove(id: string): Promise<void> {
+    const result = await this.userAddressModel.findByIdAndDelete(id);
+    if (!result) {
+      throw new NotFoundException(`User Address #${id} not found`);
+    }
   }
 }

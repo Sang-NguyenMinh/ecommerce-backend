@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ShopOrder } from './schemas/shop-order.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { CreateShopOrderDto, UpdateShopOrderDto } from './dto/shop-order.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class ShopOrderService {
@@ -43,11 +44,26 @@ export class ShopOrderService {
   async findByUser(userId: string): Promise<ShopOrder[]> {
     return this.shopOrderModel.find({ userId }).sort({ createdAt: -1 });
   }
-  findAll() {
-    return `This action returns all shopOrder`;
+  async findAll(
+    filter?: FilterQuery<ShopOrder>,
+    options?: CustomOptions<ShopOrder>,
+  ): Promise<{ shopOrders: ShopOrder[]; total: number }> {
+    const total = await this.shopOrderModel.countDocuments({ ...filter });
+    const shopOrders = await this.shopOrderModel
+      .find({ ...filter }, { ...options })
+      .populate(['shippingMethodId', 'userId', 'shippingAddress'])
+      .exec();
+    return {
+      shopOrders,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} shopOrder`;
+  async remove(id: string) {
+    const deletedOrder = await this.shopOrderModel.findByIdAndDelete(id);
+    if (!deletedOrder) {
+      throw new NotFoundException('Order not found');
+    }
+    return deletedOrder;
   }
 }

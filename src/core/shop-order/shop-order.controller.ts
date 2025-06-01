@@ -43,6 +43,6 @@ export class ShopOrderController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.shopOrderService.remove(+id);
+    return this.shopOrderService.remove(id);
   }
 }

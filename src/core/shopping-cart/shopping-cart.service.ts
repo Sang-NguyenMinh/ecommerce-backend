@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { ShoppingCart } from './schemas/shopping-cart.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   CreateShoppingCartDto,
   UpdateShoppingCartDto,
 } from './dto/shopping-cart.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class ShoppingCartService {
@@ -43,11 +44,28 @@ export class ShoppingCartService {
     }
     return cart;
   }
-  findAll() {
-    return `This action returns all shoppingCart`;
+  async findAll(
+    filter?: FilterQuery<ShoppingCart>,
+    options?: CustomOptions<ShoppingCart>,
+  ): Promise<{ shoppingCarts: ShoppingCart[]; total: number }> {
+    const total = await this.shoppingCartModel.countDocuments({ ...filter });
+
+    const shoppingCarts = await this.shoppingCartModel
+      .find({ ...filter }, { ...options })
+      .populate('userId')
+      .exec();
+
+    return {
+      shoppingCarts,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} shoppingCart`;
+  async remove(id: string) {
+    const deletedCart = await this.shoppingCartModel.findByIdAndDelete(id);
+    if (!deletedCart) {
+      throw new NotFoundException('Shopping Cart not found');
+    }
+    return deletedCart;
   }
 }

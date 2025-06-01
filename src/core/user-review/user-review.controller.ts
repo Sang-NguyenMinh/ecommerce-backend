@@ -44,6 +44,6 @@ export class UserReviewController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userReviewService.remove(+id);
+    return this.userReviewService.remove(id);
   }
 }

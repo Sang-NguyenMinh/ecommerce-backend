@@ -1,11 +1,12 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { PromotionProduct } from './schemas/promotion-product.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import {
   CreatePromotionProductDto,
   UpdatePromotionProductDto,
 } from './dto/promotion-product.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class PromotionProductService {
@@ -46,11 +47,29 @@ export class PromotionProductService {
     return promotionProduct;
   }
 
-  findAll() {
-    return `This action returns all promotionProduct`;
+  async findAll(
+    filter?: FilterQuery<PromotionProduct>,
+    options?: CustomOptions<PromotionProduct>,
+  ): Promise<{ promotionProducts: PromotionProduct[]; total: number }> {
+    const total = await this.promotionProductModel.countDocuments({
+      ...filter,
+    });
+    const promotionProducts = await this.promotionProductModel
+      .find({ ...filter }, { ...options })
+      .populate('productItemId')
+      .populate('promotionId')
+      .exec();
+    return {
+      promotionProducts,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} promotionProduct`;
+  async remove(id: string) {
+    const promotionProduct =
+      await this.promotionProductModel.findByIdAndDelete(id);
+    if (!promotionProduct)
+      throw new NotFoundException('Promotion Product not found');
+    return promotionProduct;
   }
 }

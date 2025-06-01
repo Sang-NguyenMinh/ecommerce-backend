@@ -46,6 +46,6 @@ export class ShippingMethodController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.shippingMethodService.remove(+id);
+    return this.shippingMethodService.remove(id);
   }
 }

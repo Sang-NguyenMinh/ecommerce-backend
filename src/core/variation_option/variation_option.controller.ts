@@ -48,6 +48,6 @@ export class VariationOptionController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.variationOptionService.remove(+id);
+    return this.variationOptionService.remove(id);
   }
 }

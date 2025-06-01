@@ -5,7 +5,8 @@ import {
 } from './dto/variation-option.dto';
 import { VariationOption } from './schemas/variation_option.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class VariationOptionService {
@@ -44,11 +45,30 @@ export class VariationOptionService {
     }
     return variationOption;
   }
-  findAll() {
-    return `This action returns all variationOption`;
+  async findAll(
+    filter?: FilterQuery<VariationOption>,
+    options?: CustomOptions<VariationOption>,
+  ): Promise<{ variationOptions: VariationOption[]; total: number }> {
+    const total = await this.variationOptionModel.countDocuments({
+      ...filter,
+    });
+
+    const variationOptions = await this.variationOptionModel
+      .find({ ...filter }, { ...options })
+      .exec();
+
+    return {
+      variationOptions,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} variationOption`;
+  async remove(id: string) {
+    const deletedVariationOption =
+      await this.variationOptionModel.findByIdAndDelete(id);
+    if (!deletedVariationOption) {
+      throw new NotFoundException('Variation Option not found');
+    }
+    return deletedVariationOption;
   }
 }

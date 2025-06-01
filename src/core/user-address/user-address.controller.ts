@@ -46,6 +46,6 @@ export class UserAddressController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.userAddressService.remove(+id);
+    return this.userAddressService.remove(id);
   }
 }

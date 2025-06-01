@@ -1,8 +1,9 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Variation } from './schemas/variation.schema';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class VariationService {
@@ -36,11 +37,23 @@ export class VariationService {
     return variation;
   }
 
-  findAll() {
-    return `This action returns all variation`;
+  async findAll(
+    filter?: FilterQuery<Variation>,
+    options?: CustomOptions<Variation>,
+  ): Promise<{ variations: Variation[]; total: number }> {
+    const total = await this.variationModel.countDocuments({ ...filter });
+
+    const variations = await this.variationModel
+      .find({ ...filter }, { ...options })
+      .exec();
+
+    return {
+      variations,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} variation`;
+  async remove(id: string): Promise<void> {
+    await this.variationModel.findByIdAndDelete(id);
   }
 }

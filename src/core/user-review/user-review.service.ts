@@ -5,7 +5,8 @@ import {
   CreateUserReviewDto,
   UpdateUserReviewDto,
 } from './dto/user-review.dto';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class UserReviewService {
@@ -42,11 +43,27 @@ export class UserReviewService {
     return userReview;
   }
 
-  findAll() {
-    return `This action returns all userReview`;
+  async findAll(
+    filter?: FilterQuery<UserReview>,
+    options?: CustomOptions<UserReview>,
+  ): Promise<{ userReviews: UserReview[]; total: number }> {
+    const total = await this.userReviewModel.countDocuments({ ...filter });
+
+    const userReviews = await this.userReviewModel
+      .find({ ...filter }, { ...options })
+      .populate(['userId', 'orderedProductId'])
+      .exec();
+
+    return {
+      userReviews,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} userReview`;
+  async remove(id: string): Promise<void> {
+    const userReview = await this.userReviewModel.findByIdAndDelete(id);
+    if (!userReview) {
+      throw new NotFoundException('User Review not found');
+    }
   }
 }

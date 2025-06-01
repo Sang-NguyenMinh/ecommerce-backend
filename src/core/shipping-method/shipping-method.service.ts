@@ -4,8 +4,9 @@ import {
   CreateShippingMethodDto,
   UpdateShippingMethodDto,
 } from './dto/shipping-method.dto';
-import { Model } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
+import { CustomOptions } from 'src/config/types';
 
 @Injectable()
 export class ShippingMethodService {
@@ -45,11 +46,28 @@ export class ShippingMethodService {
     return shippingMethod;
   }
 
-  findAll() {
-    return `This action returns all shippingMethod`;
+  async findAll(
+    filter?: FilterQuery<ShippingMethod>,
+    options?: CustomOptions<ShippingMethod>,
+  ): Promise<{ shippingMethods: ShippingMethod[]; total: number }> {
+    const total = await this.shippingMethodModel.countDocuments({
+      ...filter,
+    });
+    const shippingMethods = await this.shippingMethodModel
+      .find({ ...filter }, { ...options })
+      .exec();
+    return {
+      shippingMethods,
+      total,
+    };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} shippingMethod`;
+  async remove(id: string) {
+    const deletedShippingMethod =
+      await this.shippingMethodModel.findByIdAndDelete(id);
+    if (!deletedShippingMethod) {
+      throw new NotFoundException('Shipping method not found');
+    }
+    return deletedShippingMethod;
   }
 }

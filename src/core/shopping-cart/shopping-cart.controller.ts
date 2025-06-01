@@ -46,6 +46,6 @@ export class ShoppingCartController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.shoppingCartService.remove(+id);
+    return this.shoppingCartService.remove(id);
   }
 }

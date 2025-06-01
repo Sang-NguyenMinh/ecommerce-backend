@@ -48,6 +48,6 @@ export class ShoppingCartItemController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.shoppingCartItemService.remove(+id);
+    return this.shoppingCartItemService.remove(id);
   }
 }
