@@ -1,4 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
+import { Transform } from 'class-transformer';
 import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 
@@ -33,13 +34,6 @@ export class CreateProductDto {
 }
 
 export class UpdateProductDto {
-  @ApiProperty({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'ID of the product  to update',
-  })
-  @IsMongoId()
-  id: string;
-
   @ApiPropertyOptional({
     example: 'Love Bracelet',
     description: 'Name of the product',
@@ -49,12 +43,45 @@ export class UpdateProductDto {
   productName?: string;
 
   @ApiPropertyOptional({
-    description: 'Product thumbnail file',
-    type: 'string',
-    format: 'binary',
+    description: 'New product thumbnail files',
+    type: 'array',
+    items: {
+      type: 'string',
+      format: 'binary',
+    },
   })
   @IsOptional()
   thumbnails?: any;
+
+  @ApiPropertyOptional({
+    description: 'Existing thumbnail URLs to keep (as JSON string or array)',
+    example:
+      '["https://example.com/image1.jpg", "https://example.com/image2.jpg"]',
+  })
+  @IsOptional()
+  @Transform(({ value }) => {
+    console.log('Transform existingThumbnails value:', value, typeof value);
+
+    // Nếu là string, parse JSON
+    if (typeof value === 'string') {
+      try {
+        const parsed = JSON.parse(value);
+        return Array.isArray(parsed) ? parsed : [value];
+      } catch {
+        // Nếu parse JSON thất bại, coi như single string
+        return [value];
+      }
+    }
+
+    // Nếu là array, return as is
+    if (Array.isArray(value)) {
+      return value;
+    }
+
+    // Default empty array
+    return [];
+  })
+  existingThumbnails?: string[];
 
   @ApiPropertyOptional({
     example: 'A beautiful bracelet for couples',

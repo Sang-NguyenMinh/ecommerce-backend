@@ -4,7 +4,10 @@ import {
   InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
-import { ProductCategory } from './schemas/product-category.schema';
+import {
+  ProductCategory,
+  ProductCategoryDocument,
+} from './schemas/product-category.schema';
 import { FilterQuery, Model, QueryOptions, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -13,16 +16,22 @@ import {
 } from './dto/product-category.dto';
 import { CustomOptions } from 'src/config/types';
 import { ProductService } from '../product/product.service';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class ProductCategoryService {
+export class ProductCategoryService extends BaseService<ProductCategoryDocument> {
   constructor(
     @InjectModel(ProductCategory.name)
-    private productCategoryModel: Model<ProductCategory>,
+    private productCategoryModel: Model<ProductCategoryDocument>,
     private productService: ProductService,
-  ) {}
+  ) {
+    super(productCategoryModel);
+  }
 
-  async create(dto: CreateProductCategoryDto): Promise<ProductCategory> {
+  async create(
+    dto: CreateProductCategoryDto,
+    thumbnailUrl?: string,
+  ): Promise<ProductCategory> {
     const existingCategory = await this.productCategoryModel
       .findOne({ categoryName: dto.categoryName })
       .exec();
@@ -30,24 +39,24 @@ export class ProductCategoryService {
       throw new BadRequestException('Category name already exists');
     }
 
-    const newCategory = new this.productCategoryModel(dto);
+    const categoryData = {
+      ...dto,
+      ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
+    };
+
+    const newCategory = new this.productCategoryModel(categoryData);
     return newCategory.save();
   }
 
-  async findOne(categoryId: string): Promise<ProductCategory> {
-    const category = await this.productCategoryModel
-      .findById(categoryId)
-      .exec();
-    if (!category) {
-      throw new NotFoundException('Product category does not exist');
-    }
-    return category;
-  }
   async update(
     id: string,
     dto: UpdateProductCategoryDto,
+    thumbnailUrl?: string,
   ): Promise<ProductCategory> {
-    const { ...updateData } = dto;
+    const updateData = {
+      ...dto,
+      ...(thumbnailUrl && { thumbnail: thumbnailUrl }),
+    };
 
     const updatedCategory = await this.productCategoryModel
       .findByIdAndUpdate(id, updateData, { new: true })
@@ -60,22 +69,38 @@ export class ProductCategoryService {
     return updatedCategory;
   }
 
-  async findAll(
-    filter?: FilterQuery<ProductCategory>,
-    options?: CustomOptions<ProductCategory>,
-  ) {
-    const total = await this.productCategoryModel.countDocuments({ ...filter });
-
-    const categories = await this.productCategoryModel
-      .find({ ...filter }, { ...options })
-      .populate('parentCategory')
-      .exec();
-
-    return {
-      categories,
-      total,
+  async findAll(filter?: any, options?: any) {
+    // Add default population for parentCategory
+    const defaultOptions = {
+      ...options,
+      populates: [
+        { path: 'parentCategory', select: 'categoryName' },
+        ...(options?.populates || []),
+      ],
     };
+
+    return super.findAll(filter, defaultOptions);
   }
+
+  async findOne(
+    filter: FilterQuery<ProductCategoryDocument>,
+    options?: Omit<
+      CustomOptions<ProductCategoryDocument>,
+      'page' | 'pageSize' | 'limit'
+    >,
+  ): Promise<ProductCategoryDocument | null> {
+    // Add default population for parentCategory
+    const defaultOptions = {
+      ...options,
+      populates: [
+        { path: 'parentCategory', select: 'categoryName' },
+        ...(options?.populates || []),
+      ],
+    };
+
+    return super.findOne(filter, defaultOptions);
+  }
+
   async remove(id: string) {
     const category = await this.productCategoryModel.findById(id).exec();
     if (!category) {
@@ -96,7 +121,6 @@ export class ProductCategoryService {
     });
 
     if (productsUsingCategory > 0) {
-    
     }
 
     const deleted = await this.productCategoryModel

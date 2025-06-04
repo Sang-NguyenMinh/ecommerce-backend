@@ -8,6 +8,7 @@ import {
   ProductCategorySchema,
 } from './schemas/product-category.schema';
 import { ProductModule } from '../product/product.module';
+import { CloudinaryService } from 'src/shared/cloudinary.service';
 
 @Module({
   imports: [
@@ -17,6 +18,6 @@ import { ProductModule } from '../product/product.module';
     ProductModule,
   ],
   controllers: [ProductCategoryController],
-  providers: [ProductCategoryService],
+  providers: [ProductCategoryService, CloudinaryService],
 })
 export class ProductCategoryModule {}

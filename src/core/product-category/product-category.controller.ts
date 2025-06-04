@@ -1,57 +1,156 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
   Query,
+  UseInterceptors,
+  UploadedFile,
 } from '@nestjs/common';
 import { ProductCategoryService } from './product-category.service';
 import {
   CreateProductCategoryDto,
+  ProductCategoryQueryDto,
   UpdateProductCategoryDto,
 } from './dto/product-category.dto';
-import { Types } from 'mongoose';
 import { Public, Roles } from 'src/decorators/customize';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
+import { BaseController } from '../base/base.controller';
+import { ProductCategoryDocument } from './schemas/product-category.schema';
+import { FilterQuery } from 'mongoose';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { CloudinaryService } from 'src/shared/cloudinary.service';
 
 @ApiBearerAuth()
 @Controller('product-category')
-export class ProductCategoryController {
+export class ProductCategoryController extends BaseController<
+  ProductCategoryDocument,
+  ProductCategoryService
+> {
   constructor(
     private readonly productCategoryService: ProductCategoryService,
-  ) {}
 
-  @Roles('Admin')
+    private readonly cloudinaryService: CloudinaryService,
+  ) {
+    // Pass service, entity name, and search fields to parent constructor
+    super(productCategoryService, 'Product Category', [
+      'categoryName',
+      'description',
+    ]);
+  }
+
   @Post()
-  create(@Body() createProductCategoryDto: CreateProductCategoryDto) {
-    return this.productCategoryService.create(createProductCategoryDto);
-  }
+  @Roles('Admin')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        categoryName: {
+          type: 'string',
+          example: 'Jeans',
+          description: 'Product category name',
+        },
+        parentCategory: {
+          type: 'string',
+          example: '65f25a3d6e4b3b001c2d5a8e',
+          description: 'Parent category ID (if any)',
+        },
+        status: {
+          type: 'boolean',
+          example: true,
+          description: 'Status of the product category',
+        },
+        thumbnail: {
+          type: 'string',
+          format: 'binary',
+          description: 'Thumbnail image file',
+        },
+      },
+      required: ['categoryName'],
+    },
+  })
+  @UseInterceptors(FileInterceptor('thumbnail'))
+  async create(
+    @Body() createProductCategoryDto: CreateProductCategoryDto,
+    @UploadedFile() file?: Express.Multer.File,
+  ) {
+    try {
+      let thumbnailUrl: string | undefined;
 
-  @Public()
-  @Get()
-  findAll() {
-    return this.productCategoryService.findAll();
-  }
+      if (file) {
+        const uploadedImage = await this.cloudinaryService.uploadImage(file);
+        thumbnailUrl = uploadedImage.secure_url;
+      }
 
-  @Public()
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productCategoryService.findOne(id);
+      return this.productCategoryService.create(
+        createProductCategoryDto,
+        thumbnailUrl,
+      );
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
   @Patch(':id')
-  update(
+  @Roles('Admin')
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        categoryName: {
+          type: 'string',
+          example: 'Smartphones',
+          description: 'New category name (if you want to update)',
+        },
+        parentCategory: {
+          type: 'string',
+          example: '65f25a3d6e4b3b001c2d5a8e',
+          description: 'New parent category ID (if you want to update)',
+        },
+        status: {
+          type: 'boolean',
+          example: true,
+          description: 'Status of the product category',
+        },
+        thumbnail: {
+          type: 'string',
+          format: 'binary',
+          description: 'Thumbnail image file',
+        },
+      },
+    },
+  })
+  @UseInterceptors(FileInterceptor('thumbnail'))
+  async update(
     @Param('id') id: string,
     @Body() updateProductCategoryDto: UpdateProductCategoryDto,
+    @UploadedFile() file?: Express.Multer.File,
   ) {
-    return this.productCategoryService.update(id, {
-      ...updateProductCategoryDto,
-    });
+    try {
+      let thumbnailUrl: string | undefined;
+
+      if (file) {
+        const uploadedImage = await this.cloudinaryService.uploadImage(file);
+        thumbnailUrl = uploadedImage.secure_url;
+      }
+
+      return this.productCategoryService.update(
+        id,
+        updateProductCategoryDto,
+        thumbnailUrl,
+      );
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   }
 
+  @Roles('Admin')
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productCategoryService.remove(id);

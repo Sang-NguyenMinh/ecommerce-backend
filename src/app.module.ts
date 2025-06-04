@@ -25,6 +25,7 @@ import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handleba
 import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auths/passport/jwt-auth.guard';
 import { AuthsModule } from './auths/auths.module';
+import { BaseModule } from './core/base/base.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -45,6 +46,7 @@ import { AuthsModule } from './auths/auths.module';
     VariationModule,
     VariationOptionModule,
     AuthsModule,
+    BaseModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Product } from './schemas/product.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { CustomOptions } from 'src/config/types';
 
@@ -17,17 +21,50 @@ export class ProductService {
     return newProduct.save();
   }
 
-  async update(updateProductDto: UpdateProductDto): Promise<Product> {
-    const { id, ...updateData } = updateProductDto;
-    const updatedProduct = await this.productModel.findByIdAndUpdate(
-      id,
-      updateData,
-      { new: true, runValidators: true },
-    );
-    if (!updatedProduct) {
-      throw new NotFoundException('Product not found');
+  async update(
+    id: string,
+    updateData: Partial<UpdateProductDto>,
+  ): Promise<Product> {
+    // Validation
+    if (!id) {
+      throw new BadRequestException('Product ID is required');
     }
-    return updatedProduct;
+
+    if (!Types.ObjectId.isValid(id)) {
+      throw new BadRequestException('Invalid product ID format');
+    }
+
+    try {
+      const updatedProduct = await this.productModel.findByIdAndUpdate(
+        id,
+        updateData,
+        {
+          new: true,
+          runValidators: true,
+          populate: 'categoryId', // Populate category nếu cần
+        },
+      );
+
+      if (!updatedProduct) {
+        throw new NotFoundException(`Product with ID ${id} not found`);
+      }
+
+      console.log('Product updated successfully:', {
+        id: updatedProduct._id,
+        thumbnailsCount: updatedProduct.thumbnails?.length || 0,
+      });
+
+      return updatedProduct;
+    } catch (error) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof BadRequestException
+      ) {
+        throw error;
+      }
+      console.error('Error updating product:', error);
+      throw new BadRequestException('Failed to update product');
+    }
   }
 
   async findOne(id: string): Promise<Product> {
