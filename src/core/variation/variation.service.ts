@@ -16,8 +16,11 @@ export class VariationService {
     return newVariation.save();
   }
 
-  async update(updateVariationDto: UpdateVariationDto): Promise<Variation> {
-    const { id, ...updateData } = updateVariationDto;
+  async update(
+    id: string,
+    updateVariationDto: UpdateVariationDto,
+  ): Promise<Variation> {
+    const { ...updateData } = updateVariationDto;
     const updatedVariation = await this.variationModel.findByIdAndUpdate(
       id,
       updateData,

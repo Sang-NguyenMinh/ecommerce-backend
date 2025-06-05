@@ -38,7 +38,7 @@ export class VariationController {
     @Param('id') id: string,
     @Body() updateVariationDto: UpdateVariationDto,
   ) {
-    return this.variationService.update(updateVariationDto);
+    return this.variationService.update(id, updateVariationDto);
   }
 
   @Delete(':id')

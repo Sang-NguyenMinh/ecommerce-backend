@@ -11,7 +11,9 @@ describe('VariationOptionController', () => {
       providers: [VariationOptionService],
     }).compile();
 
-    controller = module.get<VariationOptionController>(VariationOptionController);
+    controller = module.get<VariationOptionController>(
+      VariationOptionController,
+    );
   });
 
   it('should be defined', () => {

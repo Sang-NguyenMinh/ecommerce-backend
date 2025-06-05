@@ -16,7 +16,7 @@ import {
 } from './dto/variation-option.dto';
 
 @ApiBearerAuth()
-@Controller('variation-option')
+@Controller('variation_option')
 export class VariationOptionController {
   constructor(
     private readonly variationOptionService: VariationOptionService,

@@ -26,6 +26,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auths/passport/jwt-auth.guard';
 import { AuthsModule } from './auths/auths.module';
 import { BaseModule } from './core/base/base.module';
+import { CategoryVariationModule } from './core/category-variation/variation.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -45,6 +46,7 @@ import { BaseModule } from './core/base/base.module';
     UserReviewModule,
     VariationModule,
     VariationOptionModule,
+    CategoryVariationModule,
     AuthsModule,
     BaseModule,
     ConfigModule.forRoot({ isGlobal: true }),

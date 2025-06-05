@@ -1,27 +1,36 @@
+import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsMongoId, IsOptional } from 'class-validator';
+import { IsString, IsMongoId, IsOptional, IsBoolean } from 'class-validator';
 
-export class CreateVariationDto {
+@Schema()
+export class Variation {
+  @Prop()
   @ApiProperty({ example: 'Color', description: 'Variation name' })
   @IsString()
   name: string;
 
-  @ApiProperty({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'ID of the product category',
+  @Prop()
+  @ApiPropertyOptional({
+    example: 'Color variation',
+    description: 'Variation description',
   })
-  @IsMongoId()
-  productCategoryId: string;
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @Prop({ default: true })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Is the variation active?',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }
 
-export class UpdateVariationDto {
-  @ApiPropertyOptional({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'ID of the variation',
-  })
-  @IsMongoId()
-  id: string;
+export class CreateVariationDto extends Variation {}
 
+export class UpdateVariationDto {
   @ApiPropertyOptional({
     example: 'Size',
     description: 'Updated variation name',
@@ -31,10 +40,18 @@ export class UpdateVariationDto {
   name?: string;
 
   @ApiPropertyOptional({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'Updated product category ID',
+    example: 'Size variation',
+    description: 'Updated variation description',
   })
   @IsOptional()
-  @IsMongoId()
-  productCategoryId?: string;
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({
+    example: false,
+    description: 'Is the variation active?',
+  })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
 }

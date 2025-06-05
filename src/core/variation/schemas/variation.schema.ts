@@ -9,8 +9,11 @@ export class Variation {
   @Prop()
   name: string;
 
-  @Prop({ type: Types.ObjectId, ref: ProductCategory.name })
-  productCategoryId: Types.ObjectId;
+  @Prop()
+  description?: string;
+
+  @Prop({ default: true })
+  isActive: boolean;
 }
 
 export const VariationSchema = SchemaFactory.createForClass(Variation);
