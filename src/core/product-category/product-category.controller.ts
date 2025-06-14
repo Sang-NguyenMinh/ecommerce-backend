@@ -34,7 +34,6 @@ export class ProductCategoryController extends BaseController<
 
     private readonly cloudinaryService: CloudinaryService,
   ) {
-    // Pass service, entity name, and search fields to parent constructor
     super(productCategoryService, 'Product Category', [
       'categoryName',
       'description',

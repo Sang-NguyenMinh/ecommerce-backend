@@ -1,11 +1,11 @@
 import { Module } from '@nestjs/common';
-import { CategoryVariationController } from './variation.controller';
+import { CategoryVariationController } from './categoryVariation.controller';
 import { MongooseModule } from '@nestjs/mongoose';
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from './schemas/variation.schema';
-import { CategoryVariationService } from './variation.service';
+} from './schemas/categoryVariation.schema';
+import { CategoryVariationService } from './categoryVariation.service';
 
 @Module({
   imports: [

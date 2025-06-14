@@ -1,25 +1,16 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsBoolean, IsMongoId, IsOptional, IsString } from 'class-validator';
+import { Transform } from 'class-transformer';
+import {
+  IsArray,
+  IsBoolean,
+  IsMongoId,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Types } from 'mongoose';
 import { BaseQueryDto } from 'src/core/base/base.dto';
 
-export class ProductCategoryQueryDto extends BaseQueryDto {
-  @ApiPropertyOptional({
-    description: 'Filter by parent category ID',
-    example: '65f25a3d6e4b3b001c2d5a8e',
-  })
-  @IsOptional()
-  @IsMongoId()
-  parentCategory?: string | null;
-
-  @ApiPropertyOptional({
-    description: 'Filter by status (active/inactive)',
-    example: true,
-  })
-  @IsOptional()
-  @IsBoolean()
-  status?: boolean;
-}
+export class ProductCategoryQueryDto extends BaseQueryDto {}
 
 export class CreateProductCategoryDto {
   @ApiProperty({

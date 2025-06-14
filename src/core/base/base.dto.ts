@@ -50,8 +50,7 @@ export class BaseQueryDto {
 
   @ApiPropertyOptional({
     description: 'Fields to select (comma-separated string or array)',
-    type: [String],
-    example: 'name,email,createdAt',
+    type: String,
   })
   @IsOptional()
   @Transform(({ value }) =>
@@ -63,8 +62,7 @@ export class BaseQueryDto {
 
   @ApiPropertyOptional({
     description: 'Fields to populate (comma-separated string or array)',
-    type: [String],
-    example: 'user,category',
+    type: String,
   })
   @IsOptional()
   @Transform(({ value }) =>
@@ -77,7 +75,6 @@ export class BaseQueryDto {
   @ApiPropertyOptional({
     description: 'Sort field and direction (e.g., "name:asc,createdAt:desc")',
     type: String,
-    example: 'name:asc,createdAt:desc',
   })
   @IsOptional()
   @IsString()
@@ -112,8 +109,7 @@ export class BaseQueryDto {
 
   @ApiPropertyOptional({
     description: 'IDs to exclude (comma-separated string or array)',
-    type: [String],
-    example: '507c7f79bcf86cd7994f6c0e,507c7f79bcf86cd7994f6c0d',
+    type: String,
   })
   @IsOptional()
   @Transform(({ value }) =>
@@ -133,7 +129,6 @@ export class BaseQueryDto {
     description: 'Date range filter - from',
     type: String,
     format: 'date-time',
-    example: '2024-01-01T00:00:00.000Z',
   })
   @IsOptional()
   @IsDateString()
@@ -144,7 +139,6 @@ export class BaseQueryDto {
     description: 'Date range filter - to',
     type: String,
     format: 'date-time',
-    example: '2024-12-31T23:59:59.000Z',
   })
   @IsOptional()
   @IsDateString()

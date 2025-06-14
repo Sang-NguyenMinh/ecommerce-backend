@@ -1,5 +1,4 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import e from 'express';
 import { Model, FilterQuery, Types, PopulateOptions, Document } from 'mongoose';
 
 export interface CustomOptions<T> {

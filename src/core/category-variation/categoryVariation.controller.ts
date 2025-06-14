@@ -9,14 +9,14 @@ import {
 } from '@nestjs/common';
 import { Roles } from 'src/decorators/customize';
 import { ApiBearerAuth } from '@nestjs/swagger';
-import { CategoryVariationService } from './variation.service';
+import { CategoryVariationService } from './categoryVariation.service';
 import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
-} from './dto/variation.dto';
+} from './dto/categoryVariation.dto';
 
 @ApiBearerAuth()
-@Controller('variation')
+@Controller('category-variation')
 export class CategoryVariationController {
   constructor(
     private readonly categoryVariationService: CategoryVariationService,

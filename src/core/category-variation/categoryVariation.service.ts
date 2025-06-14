@@ -2,11 +2,11 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CustomOptions } from 'src/config/types';
-import { CategoryVariation } from './schemas/variation.schema';
+import { CategoryVariation } from './schemas/categoryVariation.schema';
 import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
-} from './dto/variation.dto';
+} from './dto/categoryVariation.dto';
 
 @Injectable()
 export class CategoryVariationService {

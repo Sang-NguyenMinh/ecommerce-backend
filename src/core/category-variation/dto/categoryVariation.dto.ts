@@ -5,7 +5,6 @@ import { IsString, IsMongoId, IsOptional, IsBoolean } from 'class-validator';
 import { Types } from 'mongoose';
 import { ProductCategory } from 'src/core/product-category/schemas/product-category.schema';
 import { Variation } from 'src/core/variation/schemas/variation.schema';
-
 @Schema()
 export class CategoryVariation {
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name })
