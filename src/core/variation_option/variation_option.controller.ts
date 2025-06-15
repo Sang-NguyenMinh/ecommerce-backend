@@ -6,21 +6,30 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { VariationOptionService } from './variation_option.service';
 import { Roles } from 'src/decorators/customize';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import {
   CreateVariationOptionDto,
   UpdateVariationOptionDto,
+  VariationOptionQueryDto,
 } from './dto/variation-option.dto';
+import { extend } from 'dayjs';
+import { VariationOptionDocument } from './schemas/variation_option.schema';
+import { BaseController } from '../base/base.controller';
+import { BaseQueryResult } from '../base/base.service';
 
 @ApiBearerAuth()
 @Controller('variation_option')
-export class VariationOptionController {
-  constructor(
-    private readonly variationOptionService: VariationOptionService,
-  ) {}
+export class VariationOptionController extends BaseController<
+  VariationOptionDocument,
+  VariationOptionService
+> {
+  constructor(private readonly variationOptionService: VariationOptionService) {
+    super(variationOptionService, 'Variation Option', ['name', 'value']);
+  }
 
   @Roles('Admin')
   @Post()
@@ -29,13 +38,16 @@ export class VariationOptionController {
   }
 
   @Get()
-  findAll() {
-    return this.variationOptionService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.variationOptionService.findOne(id);
+  @ApiOperation({ summary: 'Get all variation options with filtering' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  async findAll(
+    @Query() queryDto: VariationOptionQueryDto,
+  ): Promise<BaseQueryResult<VariationOptionDocument>> {
+    return this.variationOptionService.getAll({
+      variationId: queryDto?.variationId ?? undefined,
+      filter: this.buildFilter(queryDto),
+      options: this.buildOptions(queryDto),
+    });
   }
 
   @Patch(':id')

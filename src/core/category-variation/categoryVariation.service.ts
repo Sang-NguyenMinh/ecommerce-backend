@@ -2,18 +2,25 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { FilterQuery, Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CustomOptions } from 'src/config/types';
-import { CategoryVariation } from './schemas/categoryVariation.schema';
+import {
+  CategoryVariation,
+  CategoryVariationDocument,
+} from './schemas/categoryVariation.schema';
 import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
+import { extend } from 'dayjs';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class CategoryVariationService {
+export class CategoryVariationService extends BaseService<CategoryVariationDocument> {
   constructor(
     @InjectModel(CategoryVariation.name)
-    private categoryVariationModel: Model<CategoryVariation>,
-  ) {}
+    private categoryVariationModel: Model<CategoryVariationDocument>,
+  ) {
+    super(categoryVariationModel);
+  }
 
   async create(
     createCategoryVariationDto: CreateCategoryVariationDto,
@@ -37,32 +44,6 @@ export class CategoryVariationService {
       throw new NotFoundException('CategoryVariation not found');
     }
     return updatedCategoryVariation;
-  }
-
-  async findOne(id: string): Promise<CategoryVariation> {
-    const categoryVariation = await this.categoryVariationModel.findById(id);
-    if (!categoryVariation) {
-      throw new NotFoundException('CategoryVariation not found');
-    }
-    return categoryVariation;
-  }
-
-  async findAll(
-    filter?: FilterQuery<CategoryVariation>,
-    options?: CustomOptions<CategoryVariation>,
-  ): Promise<{ categoryVariations: CategoryVariation[]; total: number }> {
-    const total = await this.categoryVariationModel.countDocuments({
-      ...filter,
-    });
-
-    const categoryVariations = await this.categoryVariationModel
-      .find({ ...filter }, { ...options })
-      .exec();
-
-    return {
-      categoryVariations,
-      total,
-    };
   }
 
   async remove(id: string): Promise<void> {

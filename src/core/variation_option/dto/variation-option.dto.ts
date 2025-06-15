@@ -1,8 +1,13 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { IsString, IsMongoId, IsOptional } from 'class-validator';
+import { BaseQueryDto } from 'src/core/base/base.dto';
 
 export class CreateVariationOptionDto {
-  @ApiProperty({ example: 'Red', description: 'Value of the variation option' })
+  @ApiProperty({ example: 'Red', description: 'name of the variation option' })
+  @IsString()
+  name: string;
+
+  @ApiProperty({ example: 'red', description: 'Value of the variation option' })
   @IsString()
   value: string;
 
@@ -24,6 +29,14 @@ export class UpdateVariationOptionDto {
 
   @ApiPropertyOptional({
     example: 'Blue',
+    description: 'Updated name of the variation option',
+  })
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional({
+    example: 'Blue',
     description: 'Updated value of the variation option',
   })
   @IsOptional()
@@ -37,4 +50,16 @@ export class UpdateVariationOptionDto {
   @IsOptional()
   @IsMongoId()
   variationId?: string;
+}
+
+export class VariationOptionQueryDto extends BaseQueryDto {
+  @ApiPropertyOptional({ description: 'Filter by variation ID' })
+  @IsOptional()
+  @IsString()
+  variationId?: string;
+
+  @ApiPropertyOptional({ description: 'Filter by option value' })
+  @IsOptional()
+  @IsString()
+  value?: string;
 }

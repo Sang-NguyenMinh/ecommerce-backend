@@ -1,7 +1,7 @@
 import { Optional } from '@nestjs/common';
 import { Prop, Schema } from '@nestjs/mongoose';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsMongoId, IsOptional, IsBoolean } from 'class-validator';
+import { IsMongoId, IsOptional, IsBoolean } from 'class-validator';
 import { Types } from 'mongoose';
 import { ProductCategory } from 'src/core/product-category/schemas/product-category.schema';
 import { Variation } from 'src/core/variation/schemas/variation.schema';
@@ -33,7 +33,7 @@ export class CategoryVariation {
   required?: boolean;
 }
 
-export class CreateCategoryVariationDto extends Variation {}
+export class CreateCategoryVariationDto extends CategoryVariation {}
 
 export class UpdateCategoryVariationDto {
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name })

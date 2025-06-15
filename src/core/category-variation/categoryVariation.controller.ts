@@ -14,28 +14,25 @@ import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
+import { BaseController } from '../base/base.controller';
+import { CategoryVariationDocument } from './schemas/categoryVariation.schema';
 
 @ApiBearerAuth()
 @Controller('category-variation')
-export class CategoryVariationController {
+export class CategoryVariationController extends BaseController<
+  CategoryVariationDocument,
+  CategoryVariationService
+> {
   constructor(
     private readonly categoryVariationService: CategoryVariationService,
-  ) {}
+  ) {
+    super(categoryVariationService, 'Category Variation', ['name', 'value']);
+  }
 
   @Roles('Admin')
   @Post()
   create(@Body() createVariationDto: CreateCategoryVariationDto) {
     return this.categoryVariationService.create(createVariationDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.categoryVariationService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.categoryVariationService.findOne(id);
   }
 
   @Patch(':id')

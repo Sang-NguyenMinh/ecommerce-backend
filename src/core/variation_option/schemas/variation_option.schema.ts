@@ -6,6 +6,8 @@ export type VariationOptionDocument = HydratedDocument<VariationOption>;
 
 @Schema()
 export class VariationOption {
+  @Prop({ required: true })
+  name: string;
   @Prop()
   value: string;
 

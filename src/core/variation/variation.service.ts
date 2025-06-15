@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { Variation, VariationDocument } from './schemas/variation.schema';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
 import { CustomOptions } from 'src/config/types';
@@ -46,43 +46,32 @@ export class VariationService extends BaseService<VariationDocument> {
     await this.variationModel.findByIdAndDelete(id);
   }
 
-  // async findAllBasic(
-  //   filter?: any,
-  //   options?: any,
-  // ): Promise<BaseQueryResult<any>> {
-  //   const basicResult = await super.findAll(filter, options);
-
-  //   const enhancedData = await Promise.all(
-  //     basicResult.data.map(async (variation: any) => {
-  //       const [categoryCount, optionCount] = await Promise.all([
-  //         this.categoryVariationModel.countDocuments({
-  //           variationId: variation._id,
-  //         }),
-  //         this.variationOptionModel.countDocuments({
-  //           variationId: variation._id,
-  //         }),
-  //       ]);
-
-  //       return {
-  //         ...variation,
-  //         categoryCount,
-  //         optionCount,
-  //       };
-  //     }),
-  //   );
-
-  //   return {
-  //     ...basicResult,
-  //     data: enhancedData,
-  //   };
-  // }
   async findAll(filter?: any, options?: any) {
     const defaultOptions = {
       ...options,
       populates: [...(options?.populates || [])],
     };
 
-    return super.findAll(filter, defaultOptions);
+    const result = await super.findAll(filter, defaultOptions);
+
+    const dataWithCount = await Promise.all(
+      result?.data.map(async (variation: any) => {
+        const variationOptionCount =
+          await this.variationOptionModel.countDocuments({
+            variationId: variation._id.toString(),
+          });
+
+        return {
+          ...variation,
+          variationOptionCount,
+        };
+      }),
+    );
+
+    return {
+      ...result,
+      data: dataWithCount,
+    };
   }
 
   async findOne(

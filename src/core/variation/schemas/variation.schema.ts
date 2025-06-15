@@ -4,7 +4,9 @@ import { ProductCategory } from 'src/core/product-category/schemas/product-categ
 
 export type VariationDocument = HydratedDocument<Variation>;
 
-@Schema()
+@Schema({
+  timestamps: true,
+})
 export class Variation {
   @Prop()
   name: string;

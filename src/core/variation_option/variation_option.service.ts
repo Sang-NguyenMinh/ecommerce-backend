@@ -3,17 +3,23 @@ import {
   CreateVariationOptionDto,
   UpdateVariationOptionDto,
 } from './dto/variation-option.dto';
-import { VariationOption } from './schemas/variation_option.schema';
+import {
+  VariationOption,
+  VariationOptionDocument,
+} from './schemas/variation_option.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { FilterQuery, Model, Types } from 'mongoose';
 import { CustomOptions } from 'src/config/types';
+import { BaseQueryResult, BaseService } from '../base/base.service';
 
 @Injectable()
-export class VariationOptionService {
+export class VariationOptionService extends BaseService<VariationOptionDocument> {
   constructor(
     @InjectModel(VariationOption.name)
-    private variationOptionModel: Model<VariationOption>,
-  ) {}
+    private variationOptionModel: Model<VariationOptionDocument>,
+  ) {
+    super(variationOptionModel);
+  }
 
   async create(
     createVariationOptionDto: CreateVariationOptionDto,
@@ -38,31 +44,6 @@ export class VariationOptionService {
     return updatedVariationOption;
   }
 
-  async findOne(id: string): Promise<VariationOption> {
-    const variationOption = await this.variationOptionModel.findById(id);
-    if (!variationOption) {
-      throw new NotFoundException('Variation Option not found');
-    }
-    return variationOption;
-  }
-  async findAll(
-    filter?: FilterQuery<VariationOption>,
-    options?: CustomOptions<VariationOption>,
-  ): Promise<{ variationOptions: VariationOption[]; total: number }> {
-    const total = await this.variationOptionModel.countDocuments({
-      ...filter,
-    });
-
-    const variationOptions = await this.variationOptionModel
-      .find({ ...filter }, { ...options })
-      .exec();
-
-    return {
-      variationOptions,
-      total,
-    };
-  }
-
   async remove(id: string) {
     const deletedVariationOption =
       await this.variationOptionModel.findByIdAndDelete(id);
@@ -70,5 +51,51 @@ export class VariationOptionService {
       throw new NotFoundException('Variation Option not found');
     }
     return deletedVariationOption;
+  }
+
+  async getAll(params?: {
+    variationId?: string | Types.ObjectId;
+    filter?: FilterQuery<VariationOptionDocument>;
+    options?: CustomOptions<VariationOptionDocument>;
+  }): Promise<BaseQueryResult<VariationOptionDocument>> {
+    const { variationId, filter = {}, options } = params || {};
+
+    let finalFilter: FilterQuery<VariationOptionDocument> = { ...filter };
+
+    if (variationId) {
+      if (!Types.ObjectId.isValid(variationId)) {
+        throw new NotFoundException('Invalid variation ID format');
+      }
+      finalFilter.variationId = variationId.toString();
+    }
+
+    const defaultOptions: CustomOptions<VariationOptionDocument> = {
+      populate: ['variationId'],
+      sort: variationId ? { name: 1 } : { createdAt: -1 },
+      ...options,
+    };
+
+    return this.findAll(finalFilter, defaultOptions);
+  }
+
+  async getByVariationId(
+    variationId: string,
+    options?: CustomOptions<VariationOptionDocument>,
+  ): Promise<BaseQueryResult<VariationOptionDocument>> {
+    if (!Types.ObjectId.isValid(variationId)) {
+      throw new NotFoundException('Invalid variation ID format');
+    }
+
+    const filter: FilterQuery<VariationOptionDocument> = {
+      variationId: new Types.ObjectId(variationId),
+    };
+
+    const defaultOptions: CustomOptions<VariationOptionDocument> = {
+      populate: ['variationId'],
+      sort: { name: 1 },
+      ...options,
+    };
+
+    return this.findAll(filter, defaultOptions);
   }
 }
