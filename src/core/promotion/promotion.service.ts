@@ -1,27 +1,22 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Promotion } from './schemas/promotion.schema';
+import { Promotion, PromotionDocument } from './schemas/promotion.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
+import { Model } from 'mongoose';
 import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
-import { CustomOptions } from 'src/config/types';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class PromotionService {
+export class PromotionService extends BaseService<PromotionDocument> {
   constructor(
-    @InjectModel(Promotion.name) private promotionModel: Model<Promotion>,
-  ) {}
+    @InjectModel(Promotion.name)
+    private promotionModel: Model<PromotionDocument>,
+  ) {
+    super(promotionModel);
+  }
 
   async create(createPromotionDto: CreatePromotionDto): Promise<Promotion> {
     const newPromotion = new this.promotionModel(createPromotionDto);
     return newPromotion.save();
-  }
-
-  async findOne(id: string): Promise<Promotion> {
-    const promotion = await this.promotionModel.findById(id);
-    if (!promotion) {
-      throw new NotFoundException('Promotion not found');
-    }
-    return promotion;
   }
 
   async update(updatePromotionDto: UpdatePromotionDto): Promise<Promotion> {
@@ -39,22 +34,6 @@ export class PromotionService {
     }
     return updatedPromotion;
   }
-  async findAll(
-    filter?: FilterQuery<Promotion>,
-    options?: CustomOptions<Promotion>,
-  ): Promise<{ promotions: Promotion[]; total: number }> {
-    const total = await this.promotionModel.countDocuments({ ...filter });
-
-    const promotions = await this.promotionModel
-      .find({ ...filter }, { ...options })
-      .exec();
-
-    return {
-      promotions,
-      total,
-    };
-  }
-
   async remove(id: string) {
     const promotion = await this.promotionModel.findByIdAndDelete(id);
     if (!promotion) {

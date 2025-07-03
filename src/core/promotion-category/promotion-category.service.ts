@@ -1,19 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { PromotionCategory } from './schemas/promotion-category.schema';
-import { FilterQuery, Model } from 'mongoose';
+import {
+  PromotionCategory,
+  PromotionCategoryDocument,
+} from './schemas/promotion-category.schema';
+import { Model } from 'mongoose';
 import {
   CreatePromotionCategoryDto,
   UpdatePromotionCategoryDto,
 } from './dto/promotion-category.dto';
-import { CustomOptions } from 'src/config/types';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class PromotionCategoryService {
+export class PromotionCategoryService extends BaseService<PromotionCategoryDocument> {
   constructor(
     @InjectModel(PromotionCategory.name)
-    private promotionCategoryModel: Model<PromotionCategory>,
-  ) {}
+    private promotionCategoryModel: Model<PromotionCategoryDocument>,
+  ) {
+    super(promotionCategoryModel);
+  }
 
   async create(dto: CreatePromotionCategoryDto): Promise<PromotionCategory> {
     return this.promotionCategoryModel.create(dto);
@@ -31,16 +36,6 @@ export class PromotionCategoryService {
     return updatedPromotionCategory;
   }
 
-  async findOne(id: string): Promise<PromotionCategory> {
-    const promotionCategory = await this.promotionCategoryModel
-      .findById(id)
-      .exec();
-    if (!promotionCategory) {
-      throw new NotFoundException('Promotion category not found');
-    }
-    return promotionCategory;
-  }
-
   async delete(id: string): Promise<{ message: string }> {
     const deleted = await this.promotionCategoryModel
       .findByIdAndDelete(id)
@@ -49,21 +44,5 @@ export class PromotionCategoryService {
       throw new NotFoundException('Promotion category not found');
     }
     return { message: 'Promotion category deleted successfully' };
-  }
-
-  async findAll(
-    filter?: FilterQuery<PromotionCategory>,
-    options?: CustomOptions<PromotionCategory>,
-  ): Promise<{ promotionCategories: PromotionCategory[]; total: number }> {
-    const total = await this.promotionCategoryModel.countDocuments({
-      ...filter,
-    });
-    const promotionCategories = await this.promotionCategoryModel
-      .find({ ...filter }, { ...options })
-      .exec();
-    return {
-      promotionCategories,
-      total,
-    };
   }
 }

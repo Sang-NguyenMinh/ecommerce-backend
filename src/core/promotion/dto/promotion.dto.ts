@@ -8,13 +8,17 @@ import {
   Max,
   IsDate,
   IsNotEmpty,
+  IsEnum,
   IsMongoId,
 } from 'class-validator';
+import { DiscountTypeEnum } from '../schemas/promotion.schema';
+import { Prop } from '@nestjs/mongoose';
 
 export class CreatePromotionDto {
   @ApiProperty({ example: 'Summer Sale', description: 'Name of the promotion' })
   @IsString()
   @IsNotEmpty()
+  @Prop({ required: true })
   name: string;
 
   @ApiPropertyOptional({
@@ -23,7 +27,22 @@ export class CreatePromotionDto {
   })
   @IsOptional()
   @IsString()
+  @Prop()
   description?: string;
+
+  @ApiProperty({
+    example: DiscountTypeEnum.PERCENTAGE,
+    description: 'Discount type',
+    enum: DiscountTypeEnum,
+    default: DiscountTypeEnum.PERCENTAGE,
+  })
+  @IsEnum(DiscountTypeEnum)
+  @Prop({
+    required: true,
+    enum: DiscountTypeEnum,
+    default: DiscountTypeEnum.PERCENTAGE,
+  })
+  discountType: DiscountTypeEnum;
 
   @ApiProperty({
     example: 20,
@@ -34,7 +53,29 @@ export class CreatePromotionDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  discountRate: number;
+  @Prop({ required: true, min: 0 })
+  discountValue: number;
+
+  @ApiPropertyOptional({
+    example: 100,
+    description: 'Max discount amount',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  maxDiscountAmount?: number;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Min order value',
+    minimum: 0,
+  })
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0, default: 0 })
+  minOrderValue: number;
 
   @ApiProperty({
     example: '2025-06-01T00:00:00.000Z',
@@ -43,6 +84,7 @@ export class CreatePromotionDto {
   @IsDate()
   @IsNotEmpty()
   @Transform(({ value }) => new Date(value))
+  @Prop({ required: true })
   startDate: Date;
 
   @ApiProperty({
@@ -52,7 +94,38 @@ export class CreatePromotionDto {
   @Transform(({ value }) => new Date(value))
   @IsDate()
   @IsNotEmpty()
+  @Prop({ required: true })
   endDate: Date;
+
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Usage limit',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  usageLimit?: number;
+
+  @ApiProperty({
+    example: 0,
+    description: 'Used count',
+    minimum: 0,
+    default: 0,
+  })
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0, default: 0 })
+  usedCount: number;
+
+  @ApiProperty({
+    example: true,
+    description: 'Is active',
+    default: true,
+  })
+  @Prop({ default: true })
+  isActive: boolean;
 }
 
 export class UpdatePromotionDto {
@@ -62,13 +135,16 @@ export class UpdatePromotionDto {
   })
   @IsMongoId()
   @IsNotEmpty()
+  @Prop({ required: true })
   id: string;
+
   @ApiPropertyOptional({
     example: 'Winter Sale',
     description: 'Updated name of the promotion',
   })
   @IsOptional()
   @IsString()
+  @Prop()
   name?: string;
 
   @ApiPropertyOptional({
@@ -77,7 +153,18 @@ export class UpdatePromotionDto {
   })
   @IsOptional()
   @IsString()
+  @Prop()
   description?: string;
+
+  @ApiPropertyOptional({
+    example: DiscountTypeEnum.FIXED_AMOUNT,
+    description: 'Updated discount type',
+    enum: DiscountTypeEnum,
+  })
+  @IsOptional()
+  @IsEnum(DiscountTypeEnum)
+  @Prop({ enum: DiscountTypeEnum })
+  discountType?: DiscountTypeEnum;
 
   @ApiPropertyOptional({
     example: 15,
@@ -89,7 +176,30 @@ export class UpdatePromotionDto {
   @IsNumber()
   @Min(0)
   @Max(100)
-  discountRate?: number;
+  @Prop({ min: 0 })
+  discountValue?: number;
+
+  @ApiPropertyOptional({
+    example: 50,
+    description: 'Updated max discount amount',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  maxDiscountAmount?: number;
+
+  @ApiPropertyOptional({
+    example: 50,
+    description: 'Updated min order value',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  minOrderValue?: number;
 
   @ApiPropertyOptional({
     example: '2025-07-01T00:00:00.000Z',
@@ -98,6 +208,7 @@ export class UpdatePromotionDto {
   @Transform(({ value }) => new Date(value))
   @IsOptional()
   @IsNotEmpty()
+  @Prop()
   startDate?: Date;
 
   @ApiPropertyOptional({
@@ -107,5 +218,36 @@ export class UpdatePromotionDto {
   @Transform(({ value }) => new Date(value))
   @IsOptional()
   @IsNotEmpty()
+  @Prop()
   endDate?: Date;
+
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Updated usage limit',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  usageLimit?: number;
+
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Updated used count',
+    minimum: 0,
+  })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  @Prop({ min: 0 })
+  usedCount?: number;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Updated is active',
+    default: true,
+  })
+  @Prop({ default: true })
+  isActive?: boolean;
 }

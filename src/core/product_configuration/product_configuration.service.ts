@@ -1,18 +1,24 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { ProductConfiguration } from './schemas/product_configuration.schema';
+import {
+  ProductConfiguration,
+  ProductConfigurationDocument,
+} from './schemas/product_configuration.schema';
 import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
   CreateProductConfigurationDto,
   UpdateProductConfigurationDto,
 } from './dto/product-configuration.dto';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class ProductConfigurationService {
+export class ProductConfigurationService extends BaseService<ProductConfigurationDocument> {
   constructor(
     @InjectModel(ProductConfiguration.name)
-    private productConfigModel: Model<ProductConfiguration>,
-  ) {}
+    private productConfigModel: Model<ProductConfigurationDocument>,
+  ) {
+    super(productConfigModel);
+  }
 
   async create(
     createProductConfigurationDto: CreateProductConfigurationDto,
@@ -38,21 +44,14 @@ export class ProductConfigurationService {
     return updatedConfig;
   }
 
-  async findOne(id: string): Promise<ProductConfiguration> {
-    const config = await this.productConfigModel
-      .findById(id)
-      .populate('productItemId variationOptionId');
-    if (!config) {
+  async createMany(createDto: CreateProductConfigurationDto[]): Promise<any> {
+    return this.productConfigModel.insertMany(createDto);
+  }
+
+  async remove(id: string): Promise<void> {
+    const deletedConfig = await this.productConfigModel.findByIdAndDelete(id);
+    if (!deletedConfig) {
       throw new NotFoundException('Product Configuration not found');
     }
-    return config;
-  }
-
-  findAll() {
-    return `This action returns all productConfiguration`;
-  }
-
-  remove(id: number) {
-    return `This action removes a #${id} productConfiguration`;
   }
 }

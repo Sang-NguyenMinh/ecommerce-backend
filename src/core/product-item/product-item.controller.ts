@@ -1,6 +1,5 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
@@ -8,65 +7,82 @@ import {
   Delete,
   UseInterceptors,
   UploadedFiles,
+  Get,
   Query,
 } from '@nestjs/common';
 import { ProductItemService } from './product-item.service';
 import {
   CreateProductItemDto,
+  ProductItemQueryDto,
   UpdateProductItemDto,
 } from './dto/product-item.dto';
-import { Public, Roles } from 'src/decorators/customize';
-import { ApiBearerAuth, ApiConsumes, ApiQuery } from '@nestjs/swagger';
+import { Roles } from 'src/decorators/customize';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiOperation,
+  ApiResponse,
+} from '@nestjs/swagger';
 import {
   FileFieldsInterceptor,
   FilesInterceptor,
 } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
-import { Types } from 'mongoose';
+import { BaseController } from '../base/base.controller';
+import { ProductItemDocument } from './schemas/product-item.schema';
+import { FilterQuery, Types } from 'mongoose';
 
 @ApiBearerAuth()
 @Controller('product-item')
-export class ProductItemController {
+export class ProductItemController extends BaseController<
+  ProductItemDocument,
+  ProductItemService
+> {
   constructor(
     private readonly productItemService: ProductItemService,
     private cloudinaryService: CloudinaryService,
-  ) {}
+  ) {
+    super(productItemService, 'Product Item', ['SKU', 'productName']);
+  }
 
+  @Post()
   @Roles('Admin')
   @ApiConsumes('multipart/form-data')
-  @Post()
-  @UseInterceptors(FileFieldsInterceptor([{ name: 'images', maxCount: 5 }]))
+  @UseInterceptors(FilesInterceptor('images'))
   async create(
     @Body() createProductItemDto: CreateProductItemDto,
-    @UploadedFiles() files: { images?: Express.Multer.File[] },
+    @UploadedFiles() files: Express.Multer.File[],
   ) {
-    const uploadedImages = await Promise.all(
-      (files.images || []).map((file) =>
-        this.cloudinaryService.uploadImage(file),
-      ),
-    );
+    try {
+      if (
+        createProductItemDto.configurations &&
+        typeof createProductItemDto.configurations === 'string'
+      ) {
+        createProductItemDto.configurations = JSON.parse(
+          createProductItemDto.configurations as string,
+        );
+      }
+      const uploadedImages = await Promise.all(
+        (files ?? []).map((file) => this.cloudinaryService.uploadImage(file)),
+      );
 
-    const imageUrls = uploadedImages.map((image) => image.secure_url);
-    return this.productItemService.create({
-      ...createProductItemDto,
-      images: imageUrls,
-    });
-  }
-
-  @Public()
-  @Get()
-  @ApiQuery({ name: 'productId', required: false, type: String })
-  findAll(@Query('productId') productId?: string) {
-    const filter: { productId?: Types.ObjectId } = {};
-    if (productId) {
-      filter.productId = new Types.ObjectId(productId);
+      return this.productItemService.create({
+        ...createProductItemDto,
+        images: uploadedImages.map((img) => img.secure_url),
+      });
+    } catch (error) {
+      console.log(error);
     }
-    return this.productItemService.findAll(filter);
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productItemService.findOne(id);
+  @Get()
+  @ApiOperation({ summary: 'Get all product items with variations' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  async findAll(@Query() queryDto: ProductItemQueryDto) {
+    const filter = this.buildProductItemFilter(queryDto);
+    const options = this.buildOptions(queryDto);
+
+    return await this.productItemService.findAllWithVariations(filter, options);
   }
 
   @Patch(':id')
@@ -79,6 +95,46 @@ export class ProductItemController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productItemService.remove(+id);
+    return this.productItemService.remove(id);
+  }
+
+  protected buildProductItemFilter(
+    queryDto: ProductItemQueryDto,
+  ): FilterQuery<ProductItemDocument> {
+    const filter: any = {};
+
+    if (queryDto.search) {
+      Object.assign(
+        filter,
+        this.productItemService['buildSearchFilter'](queryDto.search, ['SKU']),
+      );
+    }
+
+    if (queryDto.productId) {
+      filter.productId = queryDto.productId;
+    }
+
+    if (queryDto.minPrice !== undefined || queryDto.maxPrice !== undefined) {
+      filter.price = {};
+      if (queryDto.minPrice !== undefined) {
+        filter.price.$gte = queryDto.minPrice;
+      }
+      if (queryDto.maxPrice !== undefined) {
+        filter.price.$lte = queryDto.maxPrice;
+      }
+    }
+
+    if (queryDto.includeOutOfStock === false) {
+      filter.qtyInStock = { $gt: 0 };
+    }
+
+    return filter;
+  }
+
+  protected addCustomFilters(
+    filter: any,
+    queryDto: any,
+  ): FilterQuery<ProductItemDocument> {
+    return this.buildProductItemFilter(queryDto);
   }
 }

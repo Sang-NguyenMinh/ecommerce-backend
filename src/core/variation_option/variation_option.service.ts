@@ -8,15 +8,17 @@ import {
   VariationOptionDocument,
 } from './schemas/variation_option.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
-import { CustomOptions } from 'src/config/types';
-import { BaseQueryResult, BaseService } from '../base/base.service';
+import { Model, Types } from 'mongoose';
+import { BaseService } from '../base/base.service';
+import { CategoryVariationService } from '../category-variation/categoryVariation.service';
 
 @Injectable()
 export class VariationOptionService extends BaseService<VariationOptionDocument> {
   constructor(
     @InjectModel(VariationOption.name)
     private variationOptionModel: Model<VariationOptionDocument>,
+
+    private categoryVariationService: CategoryVariationService,
   ) {
     super(variationOptionModel);
   }
@@ -53,49 +55,42 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     return deletedVariationOption;
   }
 
-  async getAll(params?: {
-    variationId?: string | Types.ObjectId;
-    filter?: FilterQuery<VariationOptionDocument>;
-    options?: CustomOptions<VariationOptionDocument>;
-  }): Promise<BaseQueryResult<VariationOptionDocument>> {
-    const { variationId, filter = {}, options } = params || {};
+  async getVariationOptionsByCategoryId(categoryId: string): Promise<any> {
+    const variations = (
+      await this.categoryVariationService.getByCategoryId(categoryId)
+    ).map((variation) => variation.variationId);
 
-    let finalFilter: FilterQuery<VariationOptionDocument> = { ...filter };
+    const variationIds = variations.map((variation) =>
+      variation._id.toString(),
+    );
 
-    if (variationId) {
-      if (!Types.ObjectId.isValid(variationId)) {
-        throw new NotFoundException('Invalid variation ID format');
+    const variationOptions = await this.variationOptionModel.find({
+      variationId: { $in: variationIds },
+    });
+
+    const variationsMap = new Map();
+
+    variations.forEach((variation: any) => {
+      const variationKey = variation._id.toString();
+      variationsMap.set(variationKey, {
+        variation: variation,
+        options: [],
+      });
+    });
+
+    variationOptions.forEach((option) => {
+      const variationId = option.variationId.toString();
+      const variation = variationsMap.get(variationId);
+
+      if (variation) {
+        variation.options.push({
+          _id: option._id,
+          name: option.name,
+          value: option.value,
+        });
       }
-      finalFilter.variationId = variationId.toString();
-    }
+    });
 
-    const defaultOptions: CustomOptions<VariationOptionDocument> = {
-      populate: ['variationId'],
-      sort: variationId ? { name: 1 } : { createdAt: -1 },
-      ...options,
-    };
-
-    return this.findAll(finalFilter, defaultOptions);
-  }
-
-  async getByVariationId(
-    variationId: string,
-    options?: CustomOptions<VariationOptionDocument>,
-  ): Promise<BaseQueryResult<VariationOptionDocument>> {
-    if (!Types.ObjectId.isValid(variationId)) {
-      throw new NotFoundException('Invalid variation ID format');
-    }
-
-    const filter: FilterQuery<VariationOptionDocument> = {
-      variationId: new Types.ObjectId(variationId),
-    };
-
-    const defaultOptions: CustomOptions<VariationOptionDocument> = {
-      populate: ['variationId'],
-      sort: { name: 1 },
-      ...options,
-    };
-
-    return this.findAll(filter, defaultOptions);
+    return Array.from(variationsMap.values());
   }
 }

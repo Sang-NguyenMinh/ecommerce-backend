@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
+import { IsBoolean, IsMongoId, IsNotEmpty, IsOptional } from 'class-validator';
 
 export class CreatePromotionCategoryDto {
   @ApiProperty({
@@ -19,6 +19,23 @@ export class CreatePromotionCategoryDto {
   @IsMongoId()
   @IsNotEmpty()
   promotionId: string;
+
+  @ApiProperty({
+    example: true,
+    description:
+      'Whether sub categories should be included in the promotion (optional).',
+  })
+  @IsBoolean()
+  @IsOptional()
+  includeSubCategories?: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Whether the promotion is active (optional).',
+  })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }
 
 export class UpdatePromotionCategoryDto {
@@ -45,4 +62,21 @@ export class UpdatePromotionCategoryDto {
   @IsMongoId()
   @IsOptional()
   promotionId?: string;
+
+  @ApiProperty({
+    example: true,
+    description:
+      'Whether sub categories should be included in the promotion (optional).',
+  })
+  @IsBoolean()
+  @IsOptional()
+  includeSubCategories?: boolean;
+
+  @ApiProperty({
+    example: true,
+    description: 'Whether the promotion is active (optional).',
+  })
+  @IsBoolean()
+  @IsOptional()
+  isActive?: boolean;
 }

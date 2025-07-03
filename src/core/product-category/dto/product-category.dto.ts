@@ -1,12 +1,6 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import {
-  IsArray,
-  IsBoolean,
-  IsMongoId,
-  IsOptional,
-  IsString,
-} from 'class-validator';
+import { IsMongoId, IsOptional, IsString } from 'class-validator';
 import { Types } from 'mongoose';
 import { BaseQueryDto } from 'src/core/base/base.dto';
 
@@ -33,6 +27,13 @@ export class CreateProductCategoryDto {
   })
   @IsOptional()
   status?: boolean;
+
+  @ApiPropertyOptional({
+    example: ['65f25a3d6e4b3b001c2d5a8f', '65f25a3d6e4b3b001c2d5a90'],
+    description: 'Array of variation IDs',
+  })
+  @IsOptional()
+  variations?: string[];
 }
 
 export class UpdateProductCategoryDto {
@@ -57,5 +58,18 @@ export class UpdateProductCategoryDto {
     description: 'Status of the product category (active/inactive)',
   })
   @IsOptional()
+  @Transform(({ value }) => {
+    if (typeof value === 'string') {
+      return value === 'true';
+    }
+    return value;
+  })
   status?: boolean;
+
+  @ApiPropertyOptional({
+    example: ['65f25a3d6e4b3b001c2d5a8f', '65f25a3d6e4b3b001c2d5a90'],
+    description: 'Array of variation IDs',
+  })
+  @IsOptional()
+  variations?: string[];
 }

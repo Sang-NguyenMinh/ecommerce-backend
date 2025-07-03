@@ -6,20 +6,18 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
 } from '@nestjs/common';
 import { VariationOptionService } from './variation_option.service';
 import { Roles } from 'src/decorators/customize';
-import { ApiBearerAuth, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import {
   CreateVariationOptionDto,
   UpdateVariationOptionDto,
   VariationOptionQueryDto,
 } from './dto/variation-option.dto';
-import { extend } from 'dayjs';
 import { VariationOptionDocument } from './schemas/variation_option.schema';
 import { BaseController } from '../base/base.controller';
-import { BaseQueryResult } from '../base/base.service';
+import { FilterQuery, Types } from 'mongoose';
 
 @ApiBearerAuth()
 @Controller('variation_option')
@@ -37,19 +35,6 @@ export class VariationOptionController extends BaseController<
     return this.variationOptionService.create(createVariationOptionDto);
   }
 
-  @Get()
-  @ApiOperation({ summary: 'Get all variation options with filtering' })
-  @ApiResponse({ status: 200, description: 'Success' })
-  async findAll(
-    @Query() queryDto: VariationOptionQueryDto,
-  ): Promise<BaseQueryResult<VariationOptionDocument>> {
-    return this.variationOptionService.getAll({
-      variationId: queryDto?.variationId ?? undefined,
-      filter: this.buildFilter(queryDto),
-      options: this.buildOptions(queryDto),
-    });
-  }
-
   @Patch(':id')
   update(
     @Param('id') id: string,
@@ -61,5 +46,22 @@ export class VariationOptionController extends BaseController<
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.variationOptionService.remove(id);
+  }
+
+  @Get('by_category/:id')
+  getVariationOptionsByCategoryId(@Param('id') categoryId: string) {
+    return this.variationOptionService.getVariationOptionsByCategoryId(
+      categoryId,
+    );
+  }
+
+  protected addCustomFilters(
+    filter: any,
+    queryDto: VariationOptionQueryDto,
+  ): FilterQuery<VariationOptionDocument> {
+    if (queryDto.variationId) {
+      filter.variationId = queryDto.variationId;
+    }
+    return filter;
   }
 }

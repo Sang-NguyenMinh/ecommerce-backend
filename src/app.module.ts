@@ -26,7 +26,8 @@ import { APP_GUARD } from '@nestjs/core';
 import { JwtAuthGuard } from './auths/passport/jwt-auth.guard';
 import { AuthsModule } from './auths/auths.module';
 import { BaseModule } from './core/base/base.module';
-import { CategoryVariationModule } from './core/category-variation/categoryVariationmodule';
+import { CategoryVariationModule } from './core/category-variation/categoryVariation.module';
+import { PromotionUsageModule } from './core/promotion_usage/promotion-usage.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -46,6 +47,7 @@ import { CategoryVariationModule } from './core/category-variation/categoryVaria
     UserReviewModule,
     VariationModule,
     VariationOptionModule,
+    PromotionUsageModule,
     CategoryVariationModule,
     AuthsModule,
     BaseModule,

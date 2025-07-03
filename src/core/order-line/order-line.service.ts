@@ -1,14 +1,18 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { OrderLine } from './schemas/order-line.schema';
+import { OrderLine, OrderLineDocument } from './schemas/order-line.schema';
 import { Model } from 'mongoose';
 import { CreateOrderLineDto, UpdateOrderLineDto } from './dto/order-line.dto';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class OrderLineService {
+export class OrderLineService extends BaseService<OrderLineDocument> {
   constructor(
-    @InjectModel(OrderLine.name) private orderLineModel: Model<OrderLine>,
-  ) {}
+    @InjectModel(OrderLine.name)
+    private orderLineModel: Model<OrderLineDocument>,
+  ) {
+    super(orderLineModel);
+  }
 
   async create(createOrderLineDto: CreateOrderLineDto): Promise<OrderLine> {
     const newOrderLine = new this.orderLineModel(createOrderLineDto);
@@ -26,20 +30,6 @@ export class OrderLineService {
       throw new NotFoundException('Order Line not found');
     }
     return updatedOrderLine;
-  }
-
-  async findOne(id: string): Promise<OrderLine> {
-    const orderLine = await this.orderLineModel
-      .findById(id)
-      .populate(['productItemId', 'orderId']);
-    if (!orderLine) {
-      throw new NotFoundException('Order Line not found');
-    }
-    return orderLine;
-  }
-
-  findAll() {
-    return `This action returns all orderLine`;
   }
 
   remove(id: number) {

@@ -1,12 +1,5 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { ProductConfigurationDocument } from './schemas/product_configuration.schema';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { ProductConfigurationService } from './product_configuration.service';
 import {
   CreateProductConfigurationDto,
@@ -14,13 +7,19 @@ import {
 } from './dto/product-configuration.dto';
 import { Roles } from 'src/decorators/customize';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { BaseController } from '../base/base.controller';
 
 @ApiBearerAuth()
 @Controller('product-configuration')
-export class ProductConfigurationController {
+export class ProductConfigurationController extends BaseController<
+  ProductConfigurationDocument,
+  ProductConfigurationService
+> {
   constructor(
     private readonly productConfigurationService: ProductConfigurationService,
-  ) {}
+  ) {
+    super(productConfigurationService, 'Product Configuration');
+  }
 
   @Roles('Admin')
   @Post()
@@ -28,16 +27,6 @@ export class ProductConfigurationController {
     return this.productConfigurationService.create(
       createProductConfigurationDto,
     );
-  }
-
-  @Get()
-  findAll() {
-    return this.productConfigurationService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productConfigurationService.findOne(id);
   }
 
   @Patch(':id')
@@ -52,6 +41,6 @@ export class ProductConfigurationController {
 
   @Delete(':id')
   remove(@Param('id') id: string) {
-    return this.productConfigurationService.remove(+id);
+    return this.productConfigurationService.remove(id);
   }
 }

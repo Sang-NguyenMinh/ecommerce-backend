@@ -1,4 +1,4 @@
-import { Model, Document } from 'mongoose';
+import { Model } from 'mongoose';
 
 export async function isPropertyExist(
   model: Model<any>,

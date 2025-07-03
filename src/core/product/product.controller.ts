@@ -1,13 +1,11 @@
 import {
   Controller,
-  Get,
   Post,
   Body,
   Patch,
   Param,
   Delete,
   UseInterceptors,
-  UploadedFile,
   UploadedFiles,
   BadRequestException,
 } from '@nestjs/common';
@@ -18,14 +16,21 @@ import { CloudinaryService } from 'src/shared/cloudinary.service';
 import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/decorators/customize';
 import { Types } from 'mongoose';
+import { BaseController } from '../base/base.controller';
+import { ProductDocument } from './schemas/product.schema';
 
 @ApiBearerAuth()
 @Controller('product')
-export class ProductController {
+export class ProductController extends BaseController<
+  ProductDocument,
+  ProductService
+> {
   constructor(
     private readonly productService: ProductService,
     private cloudinaryService: CloudinaryService,
-  ) {}
+  ) {
+    super(productService, 'product');
+  }
 
   @Post()
   @Roles('Admin')
@@ -50,16 +55,6 @@ export class ProductController {
     }
   }
 
-  @Get()
-  findAll() {
-    return this.productService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.productService.findOne(id);
-  }
-
   @UseInterceptors(FilesInterceptor('thumbnails', 10))
   @Roles('Admin')
   @ApiConsumes('multipart/form-data')
@@ -68,23 +63,21 @@ export class ProductController {
     description: 'Product ID',
     example: '65f25a3d6e4b3b001c2d5a8e',
   })
-  @Patch(':id') // Changed from @Patch() to @Patch(':id')
+  @Patch(':id')
   async update(
-    @Param('id') id: string, // Get ID from URL params
+    @Param('id') id: string,
     @Body() updateProductDto: UpdateProductDto,
     @UploadedFiles() files?: Express.Multer.File[],
   ) {
     console.log('Product ID from params:', id);
     console.log('Raw DTO:', updateProductDto);
 
-    // Validate ID
     if (!id || !Types.ObjectId.isValid(id)) {
       throw new BadRequestException('Invalid product ID');
     }
 
     let updatedData = { ...updateProductDto };
 
-    // Xử lý ảnh mới được upload
     const newImageUrls: string[] = [];
     if (files && files.length > 0) {
       for (const file of files) {
@@ -98,18 +91,14 @@ export class ProductController {
       }
     }
 
-    // Lấy danh sách ảnh cũ được giữ lại
     const existingUrls = updateProductDto.existingThumbnails || [];
     console.log('Existing URLs:', existingUrls);
     console.log('New URLs:', newImageUrls);
 
-    // Kết hợp ảnh cũ và ảnh mới
     const allThumbnails = [...existingUrls, ...newImageUrls];
 
-    // Cập nhật thumbnails trong updatedData
     updatedData.thumbnails = allThumbnails;
 
-    // Xóa existingThumbnails khỏi updatedData vì đã xử lý
     delete updatedData.existingThumbnails;
 
     console.log('Final update data:', {
@@ -120,7 +109,7 @@ export class ProductController {
       finalThumbnails: allThumbnails,
     });
 
-    return this.productService.update(id, updatedData); // Pass ID separately
+    return this.productService.update(id, updatedData);
   }
 
   @Delete(':id')

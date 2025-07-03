@@ -62,23 +62,19 @@ export class UpdateProductDto {
   @Transform(({ value }) => {
     console.log('Transform existingThumbnails value:', value, typeof value);
 
-    // Nếu là string, parse JSON
     if (typeof value === 'string') {
       try {
         const parsed = JSON.parse(value);
         return Array.isArray(parsed) ? parsed : [value];
       } catch {
-        // Nếu parse JSON thất bại, coi như single string
         return [value];
       }
     }
 
-    // Nếu là array, return as is
     if (Array.isArray(value)) {
       return value;
     }
 
-    // Default empty array
     return [];
   })
   existingThumbnails?: string[];

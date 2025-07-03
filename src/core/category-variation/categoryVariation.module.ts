@@ -15,5 +15,6 @@ import { CategoryVariationService } from './categoryVariation.service';
   ],
   controllers: [CategoryVariationController],
   providers: [CategoryVariationService],
+  exports: [CategoryVariationService],
 })
 export class CategoryVariationModule {}

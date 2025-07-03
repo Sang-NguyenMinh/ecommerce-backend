@@ -6,12 +6,14 @@ import {
   VariationOption,
   VariationOptionSchema,
 } from './schemas/variation_option.schema';
+import { CategoryVariationModule } from '../category-variation/categoryVariation.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: VariationOption.name, schema: VariationOptionSchema },
     ]),
+    CategoryVariationModule,
   ],
   controllers: [VariationOptionController],
   providers: [VariationOptionService],

@@ -1,26 +1,25 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
-import { ProductItem } from 'src/core/product-item/schemas/product-item.schema';
+import { Product } from 'src/core/product/schemas/product.schema';
 import { Promotion } from 'src/core/promotion/schemas/promotion.schema';
 
 export type PromotionProductDocument = HydratedDocument<PromotionProduct>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class PromotionProduct {
   @Prop({
     type: Types.ObjectId,
-    ref: ProductItem.name,
+    ref: Product.name,
+    required: true,
   })
-  productItemId: Types.ObjectId;
+  productId: Types.ObjectId;
 
   @Prop({
     type: Types.ObjectId,
     ref: Promotion.name,
+    required: true,
   })
   promotionId: Types.ObjectId;
-
-  @Prop()
-  discountPrice?: number;
 }
 
 export const PromotionProductSchema =

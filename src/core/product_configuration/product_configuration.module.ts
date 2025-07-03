@@ -15,5 +15,6 @@ import {
   ],
   controllers: [ProductConfigurationController],
   providers: [ProductConfigurationService],
+  exports: [ProductConfigurationService],
 })
 export class ProductConfigurationModule {}

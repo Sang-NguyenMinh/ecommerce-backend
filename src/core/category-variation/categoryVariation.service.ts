@@ -1,7 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { FilterQuery, Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
-import { CustomOptions } from 'src/config/types';
 import {
   CategoryVariation,
   CategoryVariationDocument,
@@ -10,7 +9,6 @@ import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
-import { extend } from 'dayjs';
 import { BaseService } from '../base/base.service';
 
 @Injectable()
@@ -48,5 +46,22 @@ export class CategoryVariationService extends BaseService<CategoryVariationDocum
 
   async remove(id: string): Promise<void> {
     await this.categoryVariationModel.findByIdAndDelete(id);
+  }
+
+  async createMany(
+    createCategoryVariationDtos: CreateCategoryVariationDto[],
+  ): Promise<CategoryVariation[]> {
+    return this.categoryVariationModel.insertMany(createCategoryVariationDtos);
+  }
+
+  async deleteByCategoryId(categoryId: string): Promise<any> {
+    return this.categoryVariationModel.deleteMany({ categoryId }).exec();
+  }
+
+  async getByCategoryId(categoryId: string): Promise<CategoryVariation[]> {
+    return this.categoryVariationModel
+      .find({ categoryId: new Types.ObjectId(categoryId) })
+      .populate('variationId')
+      .exec();
   }
 }

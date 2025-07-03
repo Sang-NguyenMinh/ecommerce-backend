@@ -1,5 +1,5 @@
 import { Get, Query, Param, HttpException, HttpStatus } from '@nestjs/common';
-import { ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Document, FilterQuery, Types } from 'mongoose';
 import { BaseService, BaseQueryResult, BaseSelectOption } from './base.service';
 import { BaseQueryDto } from './base.dto';
@@ -80,11 +80,9 @@ export abstract class BaseController<
     return result;
   }
 
-  // Protected methods that can be overridden by child classes
   protected buildFilter(queryDto: BaseQueryDto): FilterQuery<T> {
     const filter: any = {};
 
-    // Text search
     if (queryDto.search) {
       Object.assign(
         filter,
@@ -92,7 +90,6 @@ export abstract class BaseController<
       );
     }
 
-    // Date range filter
     if (queryDto.dateFrom || queryDto.dateTo) {
       Object.assign(
         filter,
@@ -104,12 +101,10 @@ export abstract class BaseController<
       );
     }
 
-    // Status filter (if exists)
     if (queryDto.isActive !== undefined) {
       filter.isActive = queryDto.isActive;
     }
 
-    // Custom filters can be added by overriding this method
     return this.addCustomFilters(filter, queryDto);
   }
 
@@ -129,11 +124,7 @@ export abstract class BaseController<
     };
   }
 
-  // Override this method in child classes to add custom filters
-  protected addCustomFilters(
-    filter: any,
-    queryDto: BaseQueryDto,
-  ): FilterQuery<T> {
+  protected addCustomFilters(filter: any, queryDto: any): FilterQuery<T> {
     return filter;
   }
 }

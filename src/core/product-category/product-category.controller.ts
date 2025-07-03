@@ -5,21 +5,18 @@ import {
   Patch,
   Param,
   Delete,
-  Query,
   UseInterceptors,
   UploadedFile,
 } from '@nestjs/common';
 import { ProductCategoryService } from './product-category.service';
 import {
   CreateProductCategoryDto,
-  ProductCategoryQueryDto,
   UpdateProductCategoryDto,
 } from './dto/product-category.dto';
-import { Public, Roles } from 'src/decorators/customize';
+import { Roles } from 'src/decorators/customize';
 import { ApiBearerAuth, ApiBody, ApiConsumes } from '@nestjs/swagger';
 import { BaseController } from '../base/base.controller';
 import { ProductCategoryDocument } from './schemas/product-category.schema';
-import { FilterQuery } from 'mongoose';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
 
@@ -77,6 +74,14 @@ export class ProductCategoryController extends BaseController<
     @UploadedFile() file?: Express.Multer.File,
   ) {
     try {
+      if (
+        createProductCategoryDto.variations &&
+        typeof createProductCategoryDto.variations === 'string'
+      ) {
+        createProductCategoryDto.variations = JSON.parse(
+          createProductCategoryDto.variations as string,
+        );
+      }
       let thumbnailUrl: string | undefined;
 
       if (file) {
@@ -131,6 +136,15 @@ export class ProductCategoryController extends BaseController<
     @UploadedFile() file?: Express.Multer.File,
   ) {
     try {
+      if (
+        updateProductCategoryDto.variations &&
+        typeof updateProductCategoryDto.variations === 'string'
+      ) {
+        updateProductCategoryDto.variations = JSON.parse(
+          updateProductCategoryDto.variations as string,
+        );
+      }
+
       let thumbnailUrl: string | undefined;
 
       if (file) {

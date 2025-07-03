@@ -12,9 +12,6 @@ export class CategoryVariation {
 
   @Prop({ type: Types.ObjectId, ref: Variation.name })
   variationId: Types.ObjectId;
-
-  @Prop({ default: true })
-  isRequired: boolean;
 }
 
 export const CategoryVariationSchema =

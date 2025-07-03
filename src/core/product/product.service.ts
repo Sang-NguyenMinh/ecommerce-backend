@@ -3,18 +3,20 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Product } from './schemas/product.schema';
+import { Product, ProductDocument } from './schemas/product.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
-import { CustomOptions } from 'src/config/types';
+import { BaseService } from '../base/base.service';
 
 @Injectable()
-export class ProductService {
+export class ProductService extends BaseService<ProductDocument> {
   constructor(
     @InjectModel(Product.name)
-    private productModel: Model<Product>,
-  ) {}
+    private productModel: Model<ProductDocument>,
+  ) {
+    super(productModel);
+  }
 
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const newProduct = new this.productModel(createProductDto);
@@ -25,7 +27,6 @@ export class ProductService {
     id: string,
     updateData: Partial<UpdateProductDto>,
   ): Promise<Product> {
-    // Validation
     if (!id) {
       throw new BadRequestException('Product ID is required');
     }
@@ -41,7 +42,7 @@ export class ProductService {
         {
           new: true,
           runValidators: true,
-          populate: 'categoryId', // Populate category nếu cần
+          populate: 'categoryId',
         },
       );
 
@@ -65,31 +66,6 @@ export class ProductService {
       console.error('Error updating product:', error);
       throw new BadRequestException('Failed to update product');
     }
-  }
-
-  async findOne(id: string): Promise<Product> {
-    const product = await this.productModel.findById(id).populate('categoryId');
-    if (!product) {
-      throw new NotFoundException('Product not found');
-    }
-    return product;
-  }
-
-  async findAll(
-    filter?: FilterQuery<Product>,
-    options?: CustomOptions<Product>,
-  ): Promise<{ products: Product[]; total: number }> {
-    const total = await this.productModel.countDocuments({ ...filter });
-
-    const products = await this.productModel
-      .find({ ...filter }, { ...options })
-      .populate('categoryId')
-      .exec();
-
-    return {
-      products,
-      total,
-    };
   }
 
   async remove(id: string) {

@@ -11,11 +11,13 @@ import { Roles } from 'src/decorators/customize';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CategoryVariationService } from './categoryVariation.service';
 import {
+  CategoryVariationQueryDto,
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
 import { BaseController } from '../base/base.controller';
 import { CategoryVariationDocument } from './schemas/categoryVariation.schema';
+import { FilterQuery, Types } from 'mongoose';
 
 @ApiBearerAuth()
 @Controller('category-variation')
@@ -46,5 +48,16 @@ export class CategoryVariationController extends BaseController<
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.categoryVariationService.remove(id);
+  }
+
+  protected addCustomFilters(
+    filter: any,
+    queryDto: CategoryVariationQueryDto,
+  ): FilterQuery<CategoryVariationDocument> {
+    if (queryDto.categoryId) {
+      filter.categoryId = new Types.ObjectId(queryDto.categoryId);
+    }
+
+    return filter;
   }
 }

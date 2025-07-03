@@ -59,13 +59,11 @@ export abstract class BaseService<T extends Document> {
     } = options || {};
 
     try {
-      // Build filter query
       const finalFilter: FilterQuery<T> = {
         ...filter,
         ...(exclude.length > 0 && { _id: { $nin: exclude } }),
       };
 
-      // Build sort object
       let sortObject: { [key: string]: 1 | -1 } = {};
       if (sort) {
         sortObject = sort;
@@ -73,10 +71,8 @@ export abstract class BaseService<T extends Document> {
         sortObject = { createdAt: -1 };
       }
 
-      // Determine if pagination should be applied
       const shouldPaginate = page !== undefined || pageSize !== undefined;
 
-      // Calculate pagination only if needed
       let currentLimit = 0;
       let skip = 0;
       let currentPage = 1;
@@ -89,10 +85,8 @@ export abstract class BaseService<T extends Document> {
         skip = currentPage > 1 ? (currentPage - 1) * currentLimit : 0;
       }
 
-      // Count total documents
       const total = await this.model.countDocuments(finalFilter);
 
-      // Build query with proper typing
       let query = this.model.find(finalFilter);
 
       // Apply field selection
@@ -100,29 +94,24 @@ export abstract class BaseService<T extends Document> {
         query = query.select(fields.join(' '));
       }
 
-      // Apply population (legacy populate array)
       if (populate && populate.length > 0) {
         populate.forEach((field) => {
           query = query.populate(field as string) as any;
         });
       }
 
-      // Apply advanced population
       if (populates && populates.length > 0) {
         populates.forEach((populateOption) => {
           query = query.populate(populateOption) as any;
         });
       }
 
-      // Apply lean for better performance
       if (lean) {
         query = query.lean();
       }
 
-      // Apply sorting
       query = query.sort(sortObject);
 
-      // Apply pagination only if pagination parameters are provided
       if (shouldPaginate) {
         if (currentLimit > 0) {
           query = query.limit(currentLimit);
@@ -133,16 +122,13 @@ export abstract class BaseService<T extends Document> {
         }
       }
 
-      // Execute query with proper type assertion
       const data = (await query.exec()) as T[];
 
-      // Build result object
       const result: BaseQueryResult<T | any> = {
         data,
         total,
       };
 
-      // Add pagination info only if pagination was applied
       if (shouldPaginate) {
         result.pagination = {
           page: currentPage,
@@ -300,7 +286,6 @@ export abstract class BaseService<T extends Document> {
     }
   }
 
-  // Utility methods
   protected buildSearchFilter(
     search: string,
     searchFields: string[],

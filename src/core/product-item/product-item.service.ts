@@ -1,25 +1,51 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { ProductConfigurationService } from './../product_configuration/product_configuration.service';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { ProductItem } from './schemas/product-item.schema';
-import { FilterQuery, Model } from 'mongoose';
+import {
+  ProductItem,
+  ProductItemDocument,
+} from './schemas/product-item.schema';
+import { FilterQuery, Model, Types } from 'mongoose';
 import {
   CreateProductItemDto,
   UpdateProductItemDto,
 } from './dto/product-item.dto';
+import { BaseService } from '../base/base.service';
 import { CustomOptions } from 'src/config/types';
 
 @Injectable()
-export class ProductItemService {
+export class ProductItemService extends BaseService<ProductItemDocument> {
   constructor(
     @InjectModel(ProductItem.name)
-    private readonly productItemModel: Model<ProductItem>,
-  ) {}
+    private readonly productItemModel: Model<ProductItemDocument>,
+    private readonly productConfigurationService: ProductConfigurationService,
+  ) {
+    super(productItemModel);
+  }
 
-  async create(
-    createProductItemDto: CreateProductItemDto,
-  ): Promise<ProductItem> {
-    const newProductItem = new this.productItemModel(createProductItemDto);
-    return newProductItem.save();
+  async create(dto: CreateProductItemDto): Promise<any> {
+    const existingProductItem = await this.productItemModel
+      .findOne({ categoryName: dto.SKU })
+      .exec();
+    if (existingProductItem) {
+      throw new BadRequestException('Product item already exists');
+    }
+
+    const newProductItem = new this.productItemModel(dto);
+    const savedProductItem = await newProductItem.save();
+
+    const configurations = dto?.configurations?.map((optionId) => ({
+      productItemId: savedProductItem._id,
+      variationOptionId: new Types.ObjectId(optionId),
+    }));
+
+    await this.productConfigurationService.createMany(configurations as any);
+
+    return savedProductItem;
   }
 
   async update(
@@ -39,35 +65,144 @@ export class ProductItemService {
     return updatedProductItem;
   }
 
-  async findOne(id: string): Promise<ProductItem> {
-    const productItem = await this.productItemModel
-      .findById(id)
-      .populate('productId');
+  async remove(id: string): Promise<void> {
+    const productItem = await this.productItemModel.findByIdAndDelete(id);
 
     if (!productItem) {
       throw new NotFoundException('Product item not found');
     }
-
-    return productItem;
   }
 
-  async findAll(
-    filter?: FilterQuery<ProductItem>,
-    options?: CustomOptions<ProductItem>,
+  async findAllWithVariations(
+    filter?: FilterQuery<ProductItemDocument>,
+    options?: CustomOptions<ProductItemDocument>,
   ) {
-    const total = await this.productItemModel.countDocuments({ ...filter });
+    const result = await this.findAll(filter, {
+      ...options,
+      populate: ['productId'],
+    });
 
-    const productItems = await this.productItemModel
-      .find({ ...filter }, { ...options })
-      .exec();
+    if (result.data.length > 0) {
+      const productItemIds = result.data.map((item) => item._id);
+      const configurations = await this.productConfigurationService.findAll(
+        { productItemId: { $in: productItemIds } },
+        {
+          populate: ['variationOptionId'],
+          populates: [
+            {
+              path: 'variationOptionId',
+              populate: {
+                path: 'variationId',
+                model: 'Variation',
+              },
+            },
+          ],
+        },
+      );
+
+      // Group configurations by productItemId
+      const configsByProductItem = configurations.data.reduce((acc, config) => {
+        const productItemId = config.productItemId.toString();
+        if (!acc[productItemId]) {
+          acc[productItemId] = [];
+        }
+        acc[productItemId].push(config);
+        return acc;
+      }, {});
+
+      // Attach configurations to each product item
+      result.data = result.data.map((item) => ({
+        ...item,
+        configurations: configsByProductItem[item._id.toString()] || [],
+      }));
+    }
+
+    return result;
+  }
+
+  async findByIdWithVariations(
+    id: string | Types.ObjectId,
+    options?: Omit<
+      CustomOptions<ProductItemDocument>,
+      'page' | 'pageSize' | 'limit'
+    >,
+  ) {
+    const productItem = await this.findById(id, {
+      ...options,
+      populate: ['productId'], // populate product info
+    });
+
+    if (!productItem) {
+      return null;
+    }
+
+    // Lấy configurations cho product item này
+    const configurations = await this.productConfigurationService.findAll(
+      { productItemId: productItem._id },
+      {
+        populate: ['variationOptionId'],
+        populates: [
+          {
+            path: 'variationOptionId',
+            populate: {
+              path: 'variationId',
+              model: 'Variation',
+            },
+          },
+        ],
+      },
+    );
 
     return {
-      productItems,
-      total,
+      ...productItem,
+      configurations: configurations.data,
     };
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} productItem`;
+  async getProductItemVariations(productItemId: string | Types.ObjectId) {
+    const configurations = await this.productConfigurationService.findAll(
+      { productItemId },
+      {
+        populate: ['variationOptionId'],
+        populates: [
+          {
+            path: 'variationOptionId',
+            populate: {
+              path: 'variationId',
+              model: 'Variation',
+            },
+          },
+        ],
+      },
+    );
+
+    // Transform data để dễ sử dụng hơn
+    return configurations.data.map((config) => ({
+      configurationId: config._id,
+      variation: {
+        id: config.variationOptionId.variationId._id,
+        name: config.variationOptionId.variationId.name,
+        description: config.variationOptionId.variationId.description,
+      },
+      option: {
+        id: config.variationOptionId._id,
+        value: config.variationOptionId.value,
+      },
+    }));
+  }
+
+  async findByVariationOptions(variationOptionIds: string[]) {
+    const objectIds = variationOptionIds.map((id) => new Types.ObjectId(id));
+
+    const configurations = await this.productConfigurationService.findAll(
+      { variationOptionId: { $in: objectIds } },
+      { populate: ['productItemId'] },
+    );
+
+    const productItemIds = configurations.data.map(
+      (config) => config.productItemId,
+    );
+
+    return this.findAllWithVariations({ _id: { $in: productItemIds } });
   }
 }

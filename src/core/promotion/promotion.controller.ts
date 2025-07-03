@@ -11,26 +11,23 @@ import { PromotionService } from './promotion.service';
 import { CreatePromotionDto, UpdatePromotionDto } from './dto/promotion.dto';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { Roles } from 'src/decorators/customize';
+import { BaseController } from '../base/base.controller';
+import { PromotionDocument } from './schemas/promotion.schema';
 
 @ApiBearerAuth()
 @Controller('promotion')
-export class PromotionController {
-  constructor(private readonly promotionService: PromotionService) {}
+export class PromotionController extends BaseController<
+  PromotionDocument,
+  PromotionService
+> {
+  constructor(private readonly promotionService: PromotionService) {
+    super(promotionService, 'promotion', ['name']);
+  }
 
   @Roles('Admin')
   @Post()
   async create(@Body() createPromotionDto: CreatePromotionDto) {
     return this.promotionService.create(createPromotionDto);
-  }
-
-  @Get()
-  findAll() {
-    return this.promotionService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.promotionService.findOne(id);
   }
 
   @Patch()
