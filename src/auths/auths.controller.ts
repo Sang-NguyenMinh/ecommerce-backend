@@ -20,8 +20,8 @@ export class AuthsController {
     schema: {
       type: 'object',
       properties: {
-        username: { type: 'string', example: 'nmsang.dev@gmail.com' },
-        password: { type: 'string', example: 'Admin@123' },
+        username: { type: 'string', example: 'Admin@gmail.com' },
+        password: { type: 'string', example: 'Admin@gmail.com' },
       },
       required: ['username', 'password'],
     },

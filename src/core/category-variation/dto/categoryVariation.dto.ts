@@ -1,7 +1,7 @@
 import { Optional } from '@nestjs/common';
-import { Prop, Schema } from '@nestjs/mongoose';
-import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsMongoId, IsOptional, IsBoolean } from 'class-validator';
+import { Prop } from '@nestjs/mongoose';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsMongoId } from 'class-validator';
 import { Types } from 'mongoose';
 import { BaseQueryDto } from 'src/core/base/base.dto';
 import { ProductCategory } from 'src/core/product-category/schemas/product-category.schema';

@@ -1,17 +1,8 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-  Query,
-} from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { VariationService } from './variation.service';
 import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
 import { Roles } from 'src/decorators/customize';
-import { ApiBearerAuth, ApiResponse } from '@nestjs/swagger';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { BaseController } from '../base/base.controller';
 import { VariationDocument } from './schemas/variation.schema';
 

@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import {
   CreateVariationOptionDto,
   UpdateVariationOptionDto,
@@ -18,6 +23,7 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     @InjectModel(VariationOption.name)
     private variationOptionModel: Model<VariationOptionDocument>,
 
+    @Inject(forwardRef(() => CategoryVariationService))
     private categoryVariationService: CategoryVariationService,
   ) {
     super(variationOptionModel);
@@ -92,5 +98,22 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     });
 
     return Array.from(variationsMap.values());
+  }
+
+  async findByVariationIds(variationIds: string[]): Promise<VariationOption[]> {
+    const result = await this.variationOptionModel
+      .find({
+        variationId: { $in: variationIds },
+      })
+      .exec();
+    return result;
+  }
+
+  async findByVariationId(variationId: string): Promise<VariationOption[]> {
+    return this.variationOptionModel
+      .find({
+        variationId: variationId.toString(),
+      })
+      .exec();
   }
 }

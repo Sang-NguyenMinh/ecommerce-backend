@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -8,12 +10,17 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { BaseService } from '../base/base.service';
+import { VariationService } from '../variation/variation.service';
+import { CategoryVariationService } from '../category-variation/categoryVariation.service';
 
 @Injectable()
 export class ProductService extends BaseService<ProductDocument> {
   constructor(
     @InjectModel(Product.name)
     private productModel: Model<ProductDocument>,
+
+    @Inject(forwardRef(() => CategoryVariationService))
+    private categoryVariationService: CategoryVariationService,
   ) {
     super(productModel);
   }
@@ -21,6 +28,38 @@ export class ProductService extends BaseService<ProductDocument> {
   async create(createProductDto: CreateProductDto): Promise<Product> {
     const newProduct = new this.productModel(createProductDto);
     return newProduct.save();
+  }
+
+  async findProductWithVariations(productId: string): Promise<any | null> {
+    productId = '683ff8350d90164d378fbfb3';
+    const product = (await this.findById(productId)) as any;
+    if (!product) return null;
+
+    const variations = product.categoryId
+      ? await this.categoryVariationService.findVariationsByCategoryId(
+          product.categoryId,
+        )
+      : [];
+
+    return {
+      productId: product._id,
+      productName: product.productName,
+      thumbnail: product?.thumbnail,
+      description: product?.description,
+      categoryId: product.categoryId?.toString(),
+      variations,
+    };
+  }
+
+  async findAllProductsWithVariations(): Promise<any[]> {
+    const productsResult = await this.findAll();
+    const products = productsResult?.data || [];
+
+    return Promise.all(
+      products.map((product: any) =>
+        this.findProductWithVariations(product._id.toString()),
+      ),
+    ).then((results) => results.filter(Boolean));
   }
 
   async update(

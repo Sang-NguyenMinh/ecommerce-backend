@@ -1,22 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Variation, VariationDocument } from './schemas/variation.schema';
-import { FilterQuery, Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
-import { CustomOptions } from 'src/config/types';
 import { BaseQueryResult, BaseService } from '../base/base.service';
-import { CategoryVariation } from '../category-variation/schemas/categoryVariation.schema';
-import { VariationOption } from '../variation_option/schemas/variation_option.schema';
-
+import { VariationOptionService } from '../variation_option/variation_option.service';
 @Injectable()
 export class VariationService extends BaseService<VariationDocument> {
   constructor(
     @InjectModel(Variation.name)
     private variationModel: Model<VariationDocument>,
-    @InjectModel(CategoryVariation.name)
-    private categoryVariationModel: Model<CategoryVariation>,
-    @InjectModel(VariationOption.name)
-    private variationOptionModel: Model<VariationOption>,
+
+    @Inject(forwardRef(() => VariationOptionService))
+    private variationOptionService: VariationOptionService,
   ) {
     super(variationModel);
   }
@@ -46,47 +47,101 @@ export class VariationService extends BaseService<VariationDocument> {
     await this.variationModel.findByIdAndDelete(id);
   }
 
-  async findAll(filter?: any, options?: any) {
-    const defaultOptions = {
-      ...options,
-      populates: [...(options?.populates || [])],
-    };
+  async findAll(filter?: any, options?: any): Promise<BaseQueryResult<any>> {
+    try {
+      const variationResult = await super.findAll(filter, {
+        ...options,
+        lean: true,
+      });
 
-    const result = await super.findAll(filter, defaultOptions);
+      const variationIds = variationResult.data.map((variation) =>
+        variation._id.toString(),
+      );
 
-    const dataWithCount = await Promise.all(
-      result?.data.map(async (variation: any) => {
-        const variationOptionCount =
-          await this.variationOptionModel.countDocuments({
-            variationId: variation._id.toString(),
-          });
+      const variationOptions =
+        await this.variationOptionService.findByVariationIds(variationIds);
+
+      const optionsMap = new Map();
+      variationOptions.forEach((option) => {
+        const variationId = option.variationId.toString();
+        if (!optionsMap.has(variationId)) {
+          optionsMap.set(variationId, []);
+        }
+        optionsMap.get(variationId).push(option);
+      });
+
+      const enrichedData = variationResult.data.map((variation) => {
+        const variationIdStr = variation._id.toString();
+        const options = optionsMap.get(variationIdStr) || [];
 
         return {
           ...variation,
-          variationOptionCount,
+          options: options,
+          totalOptions: options.length,
         };
-      }),
-    );
+      });
+
+      return {
+        ...variationResult,
+        data: enrichedData,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  async findWithOptions(variationId: string): Promise<any | null> {
+    const variation = await this.findById(variationId);
+    if (!variation) return null;
+
+    const options =
+      await this.variationOptionService.findByVariationId(variationId);
 
     return {
-      ...result,
-      data: dataWithCount,
+      variationId: variation._id.toString(),
+      name: variation.name,
+      description: variation.description,
+      isActive: variation.isActive,
+      isRequired: false,
+      options: options.map((option: any) => ({
+        optionId: option._id.toString(),
+        value: option.value,
+        variationId: option.variationId.toString(),
+      })),
     };
   }
 
-  async findOne(
-    filter: FilterQuery<VariationDocument>,
-    options?: Omit<
-      CustomOptions<VariationDocument>,
-      'page' | 'pageSize' | 'limit'
-    >,
-  ): Promise<VariationDocument | null> {
-    // Add default population for parentCategory
-    const defaultOptions = {
-      ...options,
-      populates: [...(options?.populates || [])],
-    };
+  async findByIds(variationIds: string[]): Promise<Variation[]> {
+    return this.variationModel
+      .find({
+        _id: { $in: variationIds },
+      })
+      .exec();
+  }
 
-    return super.findOne(filter, defaultOptions);
+  async findMultipleWithOptions(variationIds: string[]): Promise<any[]> {
+    const variations = await this.findByIds(variationIds);
+    if (!variations.length) return [];
+
+    const options =
+      await this.variationOptionService.findByVariationIds(variationIds);
+
+    return variations.map((variation: any) => ({
+      variationId: variation._id.toString(),
+      name: variation.name,
+      description: variation.description,
+      isActive: variation.isActive,
+      isRequired: false,
+      options: options
+        .filter(
+          (option) =>
+            option.variationId.toString() === variation._id.toString(),
+        )
+        .map((option: any) => ({
+          optionId: option._id.toString(),
+          value: option.value,
+          variationId: option.variationId.toString(),
+        })),
+    }));
   }
 }

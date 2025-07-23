@@ -1,6 +1,8 @@
 import { ProductConfigurationService } from './../product_configuration/product_configuration.service';
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
@@ -22,6 +24,8 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
   constructor(
     @InjectModel(ProductItem.name)
     private readonly productItemModel: Model<ProductItemDocument>,
+
+    @Inject(forwardRef(() => ProductConfigurationService))
     private readonly productConfigurationService: ProductConfigurationService,
   ) {
     super(productItemModel);

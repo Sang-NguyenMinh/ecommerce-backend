@@ -1,12 +1,4 @@
-import {
-  Controller,
-  Get,
-  Post,
-  Body,
-  Patch,
-  Param,
-  Delete,
-} from '@nestjs/common';
+import { Controller, Post, Body, Patch, Param, Delete } from '@nestjs/common';
 import { Roles } from 'src/decorators/customize';
 import { ApiBearerAuth } from '@nestjs/swagger';
 import { CategoryVariationService } from './categoryVariation.service';

@@ -23,10 +23,7 @@ import {
   ApiOperation,
   ApiResponse,
 } from '@nestjs/swagger';
-import {
-  FileFieldsInterceptor,
-  FilesInterceptor,
-} from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
 import { BaseController } from '../base/base.controller';
 import { ProductItemDocument } from './schemas/product-item.schema';

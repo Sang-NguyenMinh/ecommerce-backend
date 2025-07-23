@@ -67,7 +67,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
       errors = [exception.message];
     }
 
-    // Map các ngoại lệ đến thông báo mặc định
     const defaultMessages = new Map<Function, string>([
       [BadRequestException, 'Bad Request'],
       [UnauthorizedException, 'Unauthorized'],
@@ -110,7 +109,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
   }
 }
 
-//Sử dụng cho một số controller thì @UseFilters(AllExceptionsFilter)   tất cả thì  app.useGlobalFilters(new AllExceptionsFilter()); trong main.ts
 // return
 // statusCode: Mã trạng thái HTTP
 // timestamp: Thời điểm xảy ra lỗi

@@ -30,13 +30,6 @@ export class AuthService {
     return user;
   }
 
-  // async login(user: any) {
-  //   const payload = { email: user?.email, userId: user._id, role: user?.role };
-  //   return {
-  //     accessToken: this.jwtService.sign(payload, { expiresIn: '10d' }),
-  //   };
-  // }
-
   async login(user: any) {
     const payload = { email: user?.email, userId: user._id, role: user?.role };
 

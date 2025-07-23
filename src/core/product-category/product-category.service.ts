@@ -1,5 +1,7 @@
 import {
   BadRequestException,
+  forwardRef,
+  Inject,
   Injectable,
   InternalServerErrorException,
   NotFoundException,
@@ -24,7 +26,10 @@ export class ProductCategoryService extends BaseService<ProductCategoryDocument>
   constructor(
     @InjectModel(ProductCategory.name)
     private productCategoryModel: Model<ProductCategoryDocument>,
+
+    @Inject(forwardRef(() => ProductService))
     private productService: ProductService,
+    @Inject(forwardRef(() => CategoryVariationService))
     private categoryVariationService: CategoryVariationService,
   ) {
     super(productCategoryModel);

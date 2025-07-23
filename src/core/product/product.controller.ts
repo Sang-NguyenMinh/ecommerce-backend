@@ -13,7 +13,7 @@ import { ProductService } from './product.service';
 import { ApiBearerAuth, ApiConsumes, ApiParam } from '@nestjs/swagger';
 import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
-import { FileInterceptor, FilesInterceptor } from '@nestjs/platform-express';
+import { FilesInterceptor } from '@nestjs/platform-express';
 import { Roles } from 'src/decorators/customize';
 import { Types } from 'mongoose';
 import { BaseController } from '../base/base.controller';

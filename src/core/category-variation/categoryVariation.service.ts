@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  forwardRef,
+  Inject,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import {
@@ -10,12 +15,16 @@ import {
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
 import { BaseService } from '../base/base.service';
+import { VariationService } from '../variation/variation.service';
 
 @Injectable()
 export class CategoryVariationService extends BaseService<CategoryVariationDocument> {
   constructor(
     @InjectModel(CategoryVariation.name)
     private categoryVariationModel: Model<CategoryVariationDocument>,
+
+    @Inject(forwardRef(() => VariationService))
+    private variationService: VariationService,
   ) {
     super(categoryVariationModel);
   }
@@ -63,5 +72,30 @@ export class CategoryVariationService extends BaseService<CategoryVariationDocum
       .find({ categoryId: new Types.ObjectId(categoryId) })
       .populate('variationId')
       .exec();
+  }
+
+  async findByCategoryId(categoryId: string): Promise<CategoryVariation[]> {
+    return this.categoryVariationModel.find({ categoryId }).exec();
+  }
+
+  async findVariationsByCategoryId(categoryId: string): Promise<any[]> {
+    const categoryVariations = await this.findByCategoryId(categoryId);
+    if (!categoryVariations.length) return [];
+
+    const variationIds = categoryVariations.map((cv) =>
+      cv.variationId.toString(),
+    );
+    const variations =
+      await this.variationService.findMultipleWithOptions(variationIds);
+
+    return variations.map((variation) => {
+      const categoryVariation: any = categoryVariations.find(
+        (cv) => cv.variationId.toString() === variation.variationId,
+      );
+      return {
+        ...variation,
+        isRequired: categoryVariation?.isRequired || false,
+      };
+    });
   }
 }
