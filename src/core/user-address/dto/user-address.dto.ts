@@ -6,43 +6,78 @@ export class CreateUserAddressDto {
   @IsMongoId()
   userId: string;
 
+  @ApiProperty({ example: 'Nguyễn Văn A', description: 'Tên người nhận' })
+  @IsString()
+  recipientName: string;
+
+  @ApiProperty({ example: '0901234567', description: 'Số điện thoại' })
+  @IsString()
+  phoneNumber: string;
+
   @ApiProperty({
-    example: '123 Main Street, City, Country',
-    description: 'User Address',
+    example: '123 Lê Lợi',
+    description: 'Địa chỉ chi tiết',
   })
   @IsString()
   address: string;
 
-  @ApiProperty({
-    example: true,
-    description: 'Set as default address',
-    required: false,
-  })
-  @IsBoolean()
-  isDefault?: boolean;
+  @ApiProperty({ example: 'Quận 1', description: 'Quận/Huyện' })
+  @IsString()
+  district: string;
+
+  @ApiProperty({ example: 'TP. Hồ Chí Minh', description: 'Tỉnh/Thành phố' })
+  @IsString()
+  city: string;
+
+  @ApiProperty({ example: 'Phường 18', description: 'Phường/xã' })
+  @IsString()
+  ward: string;
 }
 
 export class UpdateUserAddressDto {
   @ApiPropertyOptional({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'Address ID',
+    example: 'Nguyễn Văn B',
+    description: 'Tên người nhận',
   })
-  @IsMongoId()
-  id: string;
+  @IsOptional()
+  @IsString()
+  recipientName?: string;
+
+  @ApiPropertyOptional({ example: '0907654321', description: 'Số điện thoại' })
+  @IsOptional()
+  @IsString()
+  phoneNumber?: string;
 
   @ApiPropertyOptional({
-    example: '456 New Street, City, Country',
-    description: 'Updated Address',
+    example: '456 Nguyễn Huệ',
+    description: 'Địa chỉ chi tiết',
   })
   @IsOptional()
   @IsString()
   address?: string;
 
+  @ApiPropertyOptional({ example: 'Quận 3', description: 'Quận/Huyện' })
+  @IsOptional()
+  @IsString()
+  district?: string;
+
   @ApiPropertyOptional({
-    example: false,
-    description: 'Set as default address',
+    example: 'TP. Hồ Chí Minh',
+    description: 'Tỉnh/Thành phố',
+  })
+  @IsOptional()
+  @IsString()
+  city?: string;
+
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Trạng thái hoạt động',
   })
   @IsOptional()
   @IsBoolean()
-  isDefault?: boolean;
+  isActive?: boolean;
+
+  @ApiProperty({ example: 'Phường 18', description: 'Phường/xã' })
+  @IsString()
+  ward?: string;
 }

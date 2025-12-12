@@ -9,6 +9,7 @@ import {
   UploadedFiles,
   Get,
   Query,
+  HttpException,
 } from '@nestjs/common';
 import { ProductItemService } from './product-item.service';
 import {
@@ -21,6 +22,7 @@ import {
   ApiBearerAuth,
   ApiConsumes,
   ApiOperation,
+  ApiParam,
   ApiResponse,
 } from '@nestjs/swagger';
 import { FilesInterceptor } from '@nestjs/platform-express';
@@ -80,6 +82,21 @@ export class ProductItemController extends BaseController<
     const options = this.buildOptions(queryDto);
 
     return await this.productItemService.findAllWithVariations(filter, options);
+  }
+
+  @Get(':id')
+  @ApiParam({ name: 'id' })
+  @ApiResponse({ status: 200, description: 'Success' })
+  @ApiResponse({ status: 404, description: 'Not found' })
+  async findOne(@Param('id') id: string): Promise<any> {
+    const result = await this.productItemService.findByIdWithVariations(
+      new Types.ObjectId(id),
+      {
+        errThrowing: false,
+      },
+    );
+
+    return result;
   }
 
   @Patch(':id')

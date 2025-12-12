@@ -9,7 +9,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import {
   CategoryVariation,
   CategoryVariationDocument,
-} from './schemas/categoryVariation.schema';
+} from './schemas/category-variation.schema';
 import {
   CreateCategoryVariationDto,
   UpdateCategoryVariationDto,
@@ -74,7 +74,9 @@ export class CategoryVariationService extends BaseService<CategoryVariationDocum
       .exec();
   }
 
-  async findByCategoryId(categoryId: string): Promise<CategoryVariation[]> {
+  async findByCategoryId(
+    categoryId: string | Types.ObjectId,
+  ): Promise<CategoryVariation[]> {
     return this.categoryVariationModel.find({ categoryId }).exec();
   }
 
@@ -82,15 +84,13 @@ export class CategoryVariationService extends BaseService<CategoryVariationDocum
     const categoryVariations = await this.findByCategoryId(categoryId);
     if (!categoryVariations.length) return [];
 
-    const variationIds = categoryVariations.map((cv) =>
-      cv.variationId.toString(),
-    );
+    const variationIds = categoryVariations.map((cv) => cv.variationId);
     const variations =
       await this.variationService.findMultipleWithOptions(variationIds);
 
     return variations.map((variation) => {
       const categoryVariation: any = categoryVariations.find(
-        (cv) => cv.variationId.toString() === variation.variationId,
+        (cv) => cv.variationId === variation.variationId,
       );
       return {
         ...variation,

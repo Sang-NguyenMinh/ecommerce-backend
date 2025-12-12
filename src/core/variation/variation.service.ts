@@ -5,7 +5,7 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { Variation, VariationDocument } from './schemas/variation.schema';
-import { Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
 import { InjectModel } from '@nestjs/mongoose';
 import { CreateVariationDto, UpdateVariationDto } from './dto/variation.dto';
 import { BaseQueryResult, BaseService } from '../base/base.service';
@@ -54,8 +54,8 @@ export class VariationService extends BaseService<VariationDocument> {
         lean: true,
       });
 
-      const variationIds = variationResult.data.map((variation) =>
-        variation._id.toString(),
+      const variationIds = variationResult.data.map(
+        (variation) => variation._id,
       );
 
       const variationOptions =
@@ -63,7 +63,7 @@ export class VariationService extends BaseService<VariationDocument> {
 
       const optionsMap = new Map();
       variationOptions.forEach((option) => {
-        const variationId = option.variationId.toString();
+        const variationId = option.variationId;
         if (!optionsMap.has(variationId)) {
           optionsMap.set(variationId, []);
         }
@@ -71,7 +71,7 @@ export class VariationService extends BaseService<VariationDocument> {
       });
 
       const enrichedData = variationResult.data.map((variation) => {
-        const variationIdStr = variation._id.toString();
+        const variationIdStr = variation._id;
         const options = optionsMap.get(variationIdStr) || [];
 
         return {
@@ -90,7 +90,7 @@ export class VariationService extends BaseService<VariationDocument> {
     }
   }
 
-  async findWithOptions(variationId: string): Promise<any | null> {
+  async findWithOptions(variationId: Types.ObjectId): Promise<any | null> {
     const variation = await this.findById(variationId);
     if (!variation) return null;
 
@@ -98,20 +98,20 @@ export class VariationService extends BaseService<VariationDocument> {
       await this.variationOptionService.findByVariationId(variationId);
 
     return {
-      variationId: variation._id.toString(),
+      variationId: variation._id,
       name: variation.name,
       description: variation.description,
       isActive: variation.isActive,
       isRequired: false,
       options: options.map((option: any) => ({
-        optionId: option._id.toString(),
+        optionId: option._id,
         value: option.value,
-        variationId: option.variationId.toString(),
+        variationId: option.variationId,
       })),
     };
   }
 
-  async findByIds(variationIds: string[]): Promise<Variation[]> {
+  async findByIds(variationIds: Types.ObjectId[]): Promise<Variation[]> {
     return this.variationModel
       .find({
         _id: { $in: variationIds },
@@ -119,7 +119,9 @@ export class VariationService extends BaseService<VariationDocument> {
       .exec();
   }
 
-  async findMultipleWithOptions(variationIds: string[]): Promise<any[]> {
+  async findMultipleWithOptions(
+    variationIds: Types.ObjectId[],
+  ): Promise<any[]> {
     const variations = await this.findByIds(variationIds);
     if (!variations.length) return [];
 
@@ -127,20 +129,17 @@ export class VariationService extends BaseService<VariationDocument> {
       await this.variationOptionService.findByVariationIds(variationIds);
 
     return variations.map((variation: any) => ({
-      variationId: variation._id.toString(),
+      variationId: variation._id,
       name: variation.name,
       description: variation.description,
       isActive: variation.isActive,
       isRequired: false,
       options: options
-        .filter(
-          (option) =>
-            option.variationId.toString() === variation._id.toString(),
-        )
+        .filter((option) => option.variationId === variation._id)
         .map((option: any) => ({
-          optionId: option._id.toString(),
+          optionId: option._id,
           value: option.value,
-          variationId: option.variationId.toString(),
+          variationId: option.variationId,
         })),
     }));
   }

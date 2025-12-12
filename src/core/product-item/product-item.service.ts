@@ -104,9 +104,8 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
         },
       );
 
-      // Group configurations by productItemId
       const configsByProductItem = configurations.data.reduce((acc, config) => {
-        const productItemId = config.productItemId.toString();
+        const productItemId = config.productItemId;
         if (!acc[productItemId]) {
           acc[productItemId] = [];
         }
@@ -114,10 +113,9 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
         return acc;
       }, {});
 
-      // Attach configurations to each product item
       result.data = result.data.map((item) => ({
         ...item,
-        configurations: configsByProductItem[item._id.toString()] || [],
+        configurations: configsByProductItem[item._id] || [],
       }));
     }
 
@@ -125,7 +123,7 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
   }
 
   async findByIdWithVariations(
-    id: string | Types.ObjectId,
+    id: Types.ObjectId,
     options?: Omit<
       CustomOptions<ProductItemDocument>,
       'page' | 'pageSize' | 'limit'

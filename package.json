@@ -17,7 +17,8 @@
     "test:watch": "jest --watch",
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
-    "test:e2e": "jest --config ./test/jest-e2e.json"
+    "test:e2e": "jest --config ./test/jest-e2e.json",
+    "export:schemas": "node -r ts-node/register -r tsconfig-paths/register generate-schema.js"
   },
   "dependencies": {
     "@nestjs-modules/mailer": "2.0.2",
@@ -51,6 +52,7 @@
     "lodash": "^4.17.21",
     "moment": "^2.30.1",
     "mongoose": "8.0.3",
+    "mongoose-schema-jsonschema": "^3.0.2",
     "nodemailer": "6.9.14",
     "passport": "0.7.0",
     "passport-google-oauth20": "^2.0.0",

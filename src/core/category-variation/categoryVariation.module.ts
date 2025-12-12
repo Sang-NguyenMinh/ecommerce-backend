@@ -4,7 +4,7 @@ import { MongooseModule } from '@nestjs/mongoose';
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from './schemas/categoryVariation.schema';
+} from './schemas/category-variation.schema';
 import { CategoryVariationService } from './categoryVariation.service';
 import {
   Variation,

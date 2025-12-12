@@ -13,8 +13,6 @@ import { PromotionCategoryModule } from './core/promotion-category/promotion-cat
 import { PromotionProductModule } from './core/promotion-product/promotion-product.module';
 import { ShippingMethodModule } from './core/shipping-method/shipping-method.module';
 import { ShopOrderModule } from './core/shop-order/shop-order.module';
-import { ShoppingCartModule } from './core/shopping-cart/shopping-cart.module';
-import { ShoppingCartItemModule } from './core/shopping-cart-item/shopping-cart-item.module';
 import { UserModule } from './core/user/user.module';
 import { UserAddressModule } from './core/user-address/user-address.module';
 import { UserReviewModule } from './core/user-review/user-review.module';
@@ -27,7 +25,7 @@ import { JwtAuthGuard } from './auths/passport/jwt-auth.guard';
 import { AuthsModule } from './auths/auths.module';
 import { BaseModule } from './core/base/base.module';
 import { CategoryVariationModule } from './core/category-variation/categoryVariation.module';
-import { PromotionUsageModule } from './core/promotion_usage/promotion-usage.module';
+import { PromotionUsageModule } from './core/promotion-usage/promotion-usage.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -40,8 +38,6 @@ import { PromotionUsageModule } from './core/promotion_usage/promotion-usage.mod
     PromotionProductModule,
     ShippingMethodModule,
     ShopOrderModule,
-    ShoppingCartModule,
-    ShoppingCartItemModule,
     UserModule,
     UserAddressModule,
     UserReviewModule,

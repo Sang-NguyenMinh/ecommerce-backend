@@ -1,0 +1,227 @@
+<html lang='vi'>
+  <head>
+    <meta charset='UTF-8' />
+    <meta name='viewport' content='width=device-width, initial-scale=1.0' />
+    <title>Xác nhận đơn hàng</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        line-height: 1.6;
+        color: #333;
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f4f4f4;
+      }
+      .container {
+        background-color: #ffffff;
+        border-radius: 8px;
+        padding: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .header {
+        text-align: center;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #4caf50;
+        margin-bottom: 30px;
+      }
+      .header h1 {
+        color: #4caf50;
+        margin: 0;
+        font-size: 28px;
+      }
+      .success-icon {
+        font-size: 50px;
+        color: #4caf50;
+        margin-bottom: 10px;
+      }
+      .order-info {
+        background-color: #f9f9f9;
+        padding: 20px;
+        border-radius: 5px;
+        margin-bottom: 20px;
+      }
+      .order-info h2 {
+        color: #333;
+        font-size: 18px;
+        margin-top: 0;
+        margin-bottom: 15px;
+      }
+      .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid #e0e0e0;
+      }
+      .info-row:last-child {
+        border-bottom: none;
+      }
+      .info-label {
+        font-weight: bold;
+        color: #666;
+      }
+      .info-value {
+        color: #333;
+        text-align: right;
+      }
+      .order-items {
+        margin-top: 30px;
+      }
+      .order-items h2 {
+        color: #333;
+        font-size: 18px;
+        margin-bottom: 15px;
+      }
+      .item {
+        display: flex;
+        padding: 15px;
+        border: 1px solid #e0e0e0;
+        border-radius: 5px;
+        margin-bottom: 10px;
+        background-color: #fafafa;
+      }
+      .item-details {
+        flex: 1;
+      }
+      .item-name {
+        font-weight: bold;
+        color: #333;
+        margin-bottom: 5px;
+      }
+      .item-qty {
+        color: #666;
+        font-size: 14px;
+      }
+      .item-price {
+        font-weight: bold;
+        color: #e74c3c;
+        text-align: right;
+        min-width: 100px;
+      }
+      .total-section {
+        margin-top: 20px;
+        padding: 20px;
+        background-color: #f0f8ff;
+        border-radius: 5px;
+        text-align: right;
+      }
+      .total-label {
+        font-size: 18px;
+        font-weight: bold;
+        color: #333;
+      }
+      .total-amount {
+        font-size: 24px;
+        font-weight: bold;
+        color: #e74c3c;
+        margin-top: 5px;
+      }
+      .track-button {
+        display: inline-block;
+        background-color: #4caf50;
+        color: white;
+        padding: 15px 40px;
+        text-decoration: none;
+        border-radius: 5px;
+        margin-top: 30px;
+        font-weight: bold;
+        text-align: center;
+      }
+      .track-button:hover {
+        background-color: #45a049;
+      }
+      .button-container {
+        text-align: center;
+        margin: 30px 0;
+      }
+      .footer {
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #e0e0e0;
+        text-align: center;
+        color: #666;
+        font-size: 14px;
+      }
+      .note {
+        background-color: #fff3cd;
+        border-left: 4px solid #ffc107;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+      .note p {
+        margin: 5px 0;
+        color: #856404;
+      }
+      @media only screen and (max-width: 600px) {
+        body {
+          padding: 10px;
+        }
+        .container {
+          padding: 20px;
+        }
+        .info-row {
+          flex-direction: column;
+        }
+        .info-value {
+          text-align: left;
+          margin-top: 5px;
+        }
+        .item {
+          flex-direction: column;
+        }
+        .item-price {
+          text-align: left;
+          margin-top: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class='container'>
+      <div class='header'>
+        <div class='success-icon'>✓</div>
+        <h1>Xác nhận đơn hàng</h1>
+        <p>Cảm ơn bạn đã đặt hàng tại Ynssen</p>
+      </div>
+
+      <p>Xin chào <strong>{{name}}</strong>,</p>
+      <p>Đơn hàng của bạn đã được đặt thành công. Dưới đây là thông tin chi
+        tiết:</p>
+
+      <div class='order-info'>
+        <h2>Thông tin đơn hàng</h2>
+        <div class='info-row'>
+          <span class='info-label'>Mã đơn hàng:</span>
+          <span class='info-value'>{{orderId}}</span>
+        </div>
+        <div class='info-row'>
+          <span class='info-label'>Ngày đặt:</span>
+          <span class='info-value'>{{orderDate}}</span>
+        </div>
+        <div class='info-row'>
+          <span class='info-label'>Trạng thái:</span>
+          <span class='info-value' style='color: #ff9800;'>Chờ xác nhận</span>
+        </div>
+        <div class='button-container'>
+          <a href='{{trackingUrl}}' class='track-button'>Theo dõi đơn hàng</a>
+        </div>
+      </div>
+
+      <div class='note'>
+        <p><strong>Lưu ý quan trọng:</strong></p>
+        <p>• Vui lòng lưu lại mã đơn hàng để tra cứu</p>
+        <p>• Đơn hàng sẽ được xác nhận trong vòng 24h</p>
+        <p>• Liên hệ hotline nếu cần hỗ trợ: 1900-xxxx</p>
+      </div>
+
+      <div class='footer'>
+        <p>Email này được gửi tự động, vui lòng không trả lời.</p>
+        <p>Nếu bạn có bất kỳ câu hỏi nào, vui lòng liên hệ:
+          support@sportbook.com</p>
+        <p style='margin-top: 15px;'>&copy; 2024 Sport Book. All rights
+          reserved.</p>
+      </div>
+    </div>
+  </body>
+</html>

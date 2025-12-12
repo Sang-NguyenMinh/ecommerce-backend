@@ -1,7 +1,42 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Transform } from 'class-transformer';
-import { IsMongoId, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import {
+  IsBoolean,
+  IsMongoId,
+  IsNotEmpty,
+  IsNumber,
+  IsOptional,
+  IsString,
+} from 'class-validator';
 import { Types } from 'mongoose';
+import { BaseQueryDto } from 'src/core/base/base.dto';
+export class ProductQueryDto extends BaseQueryDto {
+  @ApiPropertyOptional({ description: 'Filter by category ID' })
+  @IsOptional()
+  @IsString()
+  categoryId?: string;
+
+  @ApiPropertyOptional({ description: 'Minimum price' })
+  @IsOptional()
+  @IsNumber()
+  minPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Maximum price' })
+  @IsOptional()
+  @IsNumber()
+  maxPrice?: number;
+
+  @ApiPropertyOptional({ description: 'Filter products in stock' })
+  @IsOptional()
+  @IsBoolean()
+  @Transform(({ value }) => value === 'true' || value === true)
+  inStock?: boolean;
+
+  @ApiPropertyOptional({ description: 'Filter by product name' })
+  @IsOptional()
+  @IsString()
+  productName?: string;
+}
 
 export class CreateProductDto {
   @ApiProperty({ example: 'Áo thun', description: 'Name of the product' })
@@ -15,6 +50,15 @@ export class CreateProductDto {
   })
   @IsOptional()
   thumbnails?: any[];
+
+  @ApiProperty({
+    example: 499.99,
+    description: 'Price of the product item',
+  })
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber()
+  @IsNotEmpty()
+  price: number;
 
   @ApiPropertyOptional({
     example: 'A beautiful T-shirt',
@@ -78,6 +122,15 @@ export class UpdateProductDto {
     return [];
   })
   existingThumbnails?: string[];
+
+  @ApiPropertyOptional({
+    example: 499.99,
+    description: 'Updated price of the product item',
+  })
+  @Transform(({ value }) => parseFloat(value))
+  @IsNumber()
+  @IsOptional()
+  price?: number;
 
   @ApiPropertyOptional({
     example: 'A beautiful bracelet for couples',

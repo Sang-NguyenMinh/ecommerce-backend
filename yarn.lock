@@ -5924,6 +5924,13 @@ mongodb@6.2.0:
     bson "^6.2.0"
     mongodb-connection-string-url "^2.6.0"
 
+mongoose-schema-jsonschema@^3.0.2:
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/mongoose-schema-jsonschema/-/mongoose-schema-jsonschema-3.0.2.tgz#d896a408570d1226b5aefa3265e07da637e321ff"
+  integrity sha512-7s/01YQ60L6ME0EbRBh/S8nDkEzsVbbDREww2S9VUyILz/6fWZquFNWkPK0zU7DzGCtf82RQWmArcCsHC8hzsg==
+  dependencies:
+    pluralize "^8.0.0"
+
 mongoose@8.0.3:
   version "8.0.3"
   resolved "https://registry.yarnpkg.com/mongoose/-/mongoose-8.0.3.tgz#f3708ba0f40b6dec8f5f1a5d40abd69a80207114"
@@ -6467,7 +6474,7 @@ pkg-dir@^4.2.0:
   dependencies:
     find-up "^4.0.0"
 
-pluralize@8.0.0:
+pluralize@8.0.0, pluralize@^8.0.0:
   version "8.0.0"
   resolved "https://registry.yarnpkg.com/pluralize/-/pluralize-8.0.0.tgz#1a6fa16a38d12a1901e0320fa017051c539ce3b1"
   integrity sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==

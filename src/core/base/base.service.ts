@@ -83,6 +83,8 @@ export abstract class BaseService<T extends Document> {
         currentPageSize = pageSize || 10;
         currentLimit = limit || currentPageSize;
         skip = currentPage > 1 ? (currentPage - 1) * currentLimit : 0;
+      } else if (limit) {
+        currentLimit = limit;
       }
 
       const total = await this.model.countDocuments(finalFilter);
@@ -111,6 +113,9 @@ export abstract class BaseService<T extends Document> {
       }
 
       query = query.sort(sortObject);
+      if (currentLimit > 0) {
+        query = query.limit(currentLimit);
+      }
 
       if (shouldPaginate) {
         if (currentLimit > 0) {
@@ -251,7 +256,7 @@ export abstract class BaseService<T extends Document> {
   }
 
   async findById(
-    id: string | Types.ObjectId,
+    id: Types.ObjectId,
     options?: Omit<CustomOptions<T>, 'page' | 'pageSize' | 'limit'>,
   ): Promise<T | null> {
     if (!Types.ObjectId.isValid(id)) {

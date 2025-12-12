@@ -8,16 +8,28 @@ import {
   UseInterceptors,
   UploadedFiles,
   BadRequestException,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { ProductService } from './product.service';
-import { ApiBearerAuth, ApiConsumes, ApiParam } from '@nestjs/swagger';
-import { CreateProductDto, UpdateProductDto } from './dto/product.dto';
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiParam,
+  ApiResponse,
+} from '@nestjs/swagger';
+import {
+  CreateProductDto,
+  ProductQueryDto,
+  UpdateProductDto,
+} from './dto/product.dto';
 import { CloudinaryService } from 'src/shared/cloudinary.service';
 import { FilesInterceptor } from '@nestjs/platform-express';
-import { Roles } from 'src/decorators/customize';
-import { Types } from 'mongoose';
+import { Public, Roles } from 'src/decorators/customize';
+import { FilterQuery, Types } from 'mongoose';
 import { BaseController } from '../base/base.controller';
 import { ProductDocument } from './schemas/product.schema';
+import { BaseQueryResult } from '../base/base.service';
 
 @ApiBearerAuth()
 @Controller('product')
@@ -53,6 +65,18 @@ export class ProductController extends BaseController<
     } catch (error) {
       console.log(error);
     }
+  }
+
+  @Get()
+  @ApiResponse({ status: 200, description: 'Get all products successfully' })
+  @Public()
+  async findAll(
+    @Query() queryDto: ProductQueryDto,
+  ): Promise<BaseQueryResult<ProductDocument>> {
+    const filter = this.buildProductFilter(queryDto);
+    const options = this.buildOptions(queryDto);
+
+    return await this.productService.findAll(filter, options);
   }
 
   @UseInterceptors(FilesInterceptor('thumbnails', 10))
@@ -115,5 +139,56 @@ export class ProductController extends BaseController<
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.productService.remove(id);
+  }
+
+  @Get('category/:categoryId')
+  async getProductsByCategory(
+    @Param('categoryId') categoryId: string,
+    @Query() query: any,
+  ) {
+    return this.productService.getProductByCategoryId(categoryId, query);
+  }
+
+  protected buildProductFilter(
+    queryDto: ProductQueryDto,
+  ): FilterQuery<ProductDocument> {
+    const filter: any = {};
+    console.log('Building product filter with query DTO:', queryDto);
+    // Search by product name
+    if (queryDto.search || queryDto.productName) {
+      const searchTerm = queryDto.search || queryDto.productName;
+      filter.productName = { $regex: searchTerm, $options: 'i' };
+    }
+
+    // Filter by categoryId
+    if (queryDto.categoryId) {
+      if (Types.ObjectId.isValid(queryDto.categoryId)) {
+        filter.categoryId = new Types.ObjectId(queryDto.categoryId);
+      }
+    }
+
+    // Filter by price range (sẽ cần xử lý ở service level vì price nằm trong items)
+    // Hoặc bạn có thể thêm trường price vào Product schema
+
+    // Filter by stock status (cũng cần xử lý ở service level)
+
+    // Date range filter
+    if (queryDto.dateFrom || queryDto.dateTo) {
+      Object.assign(
+        filter,
+        this.productService['buildDateRangeFilter'](
+          queryDto.dateFrom,
+          queryDto.dateTo,
+          queryDto.dateField || 'createdAt',
+        ),
+      );
+    }
+
+    // Active status filter
+    if (queryDto.isActive !== undefined) {
+      filter.isActive = queryDto.isActive;
+    }
+
+    return filter;
   }
 }

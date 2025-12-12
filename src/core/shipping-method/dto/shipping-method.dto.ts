@@ -1,21 +1,15 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsNumber,
-  Min,
-  IsMongoId,
-  IsOptional,
-} from 'class-validator';
+import { IsString, IsNumber, IsOptional, Min } from 'class-validator';
 
 export class CreateShippingMethodDto {
   @ApiProperty({
-    example: 'Standard Shipping',
-    description: 'Name of the shipping method',
+    example: 'Giao hàng nhanh',
+    description: 'Tên phương thức vận chuyển',
   })
   @IsString()
   name: string;
 
-  @ApiProperty({ example: 5.99, description: 'Price of the shipping method' })
+  @ApiProperty({ example: 30000, description: 'Phí vận chuyển (VNĐ)' })
   @IsNumber()
   @Min(0)
   price: number;
@@ -23,24 +17,14 @@ export class CreateShippingMethodDto {
 
 export class UpdateShippingMethodDto {
   @ApiPropertyOptional({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'ID of the shipping method',
-  })
-  @IsMongoId()
-  id: string;
-
-  @ApiPropertyOptional({
-    example: 'Express Shipping',
-    description: 'Updated name of the shipping method',
+    example: 'Giao hàng tiết kiệm',
+    description: 'Tên phương thức vận chuyển',
   })
   @IsOptional()
   @IsString()
   name?: string;
 
-  @ApiPropertyOptional({
-    example: 9.99,
-    description: 'Updated price of the shipping method',
-  })
+  @ApiPropertyOptional({ example: 25000, description: 'Phí vận chuyển (VNĐ)' })
   @IsOptional()
   @IsNumber()
   @Min(0)

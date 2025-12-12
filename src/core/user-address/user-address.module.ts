@@ -12,5 +12,6 @@ import { UserAddress, UserAddressSchema } from './schemas/user-address.schema';
   ],
   controllers: [UserAddressController],
   providers: [UserAddressService],
+  exports: [UserAddressService],
 })
 export class UserAddressModule {}

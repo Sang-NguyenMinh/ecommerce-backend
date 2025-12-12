@@ -9,6 +9,7 @@ import {
   ProductConfiguration,
   ProductConfigurationSchema,
 } from '../product_configuration/schemas/product_configuration.schema';
+import { ProductModule } from '../product/product.module';
 
 @Module({
   imports: [
@@ -17,8 +18,10 @@ import {
       { name: ProductConfiguration.name, schema: ProductConfigurationSchema },
     ]),
     forwardRef(() => ProductConfigurationModule),
+    forwardRef(() => ProductModule),
   ],
   controllers: [ProductItemController],
   providers: [ProductItemService, CloudinaryService],
+  exports: [ProductItemService],
 })
 export class ProductItemModule {}

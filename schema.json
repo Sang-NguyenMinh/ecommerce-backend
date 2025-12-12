@@ -1,0 +1,673 @@
+{
+  "User": {
+    "type": "object",
+    "properties": {
+      "username": {
+        "type": "string"
+      },
+      "password": {
+        "type": "string"
+      },
+      "email": {
+        "type": "string"
+      },
+      "phone": {
+        "type": "string"
+      },
+      "avatar": {
+        "type": "string"
+      },
+      "role": {
+        "type": "string",
+        "default": "User"
+      },
+      "accountType": {
+        "type": "string",
+        "default": "Local"
+      },
+      "isActive": {
+        "type": "boolean",
+        "default": false
+      },
+      "pushToken": {
+        "type": "string"
+      },
+      "codeId": {
+        "type": "string"
+      },
+      "codeExpired": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "UserAddress": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "object",
+        "properties": {},
+        "title": "userId",
+        "x-ref": "User",
+        "description": "Refers to User"
+      },
+      "address": {
+        "type": "string"
+      },
+      "isDefault": {
+        "type": "boolean",
+        "default": true
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    }
+  },
+  "UserReview": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "object",
+        "properties": {},
+        "title": "userId",
+        "x-ref": "User",
+        "description": "Refers to User"
+      },
+      "orderedProductId": {
+        "type": "object",
+        "properties": {},
+        "title": "orderedProductId",
+        "x-ref": "OrderLine",
+        "description": "Refers to OrderLine"
+      },
+      "ratingValue": {
+        "type": "number",
+        "minimum": 1,
+        "maximum": 5
+      },
+      "comment": {
+        "type": "string"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "userId",
+      "orderedProductId",
+      "ratingValue"
+    ]
+  },
+  "ShopOrder": {
+    "type": "object",
+    "properties": {
+      "shoppingMethodId": {
+        "type": "object",
+        "properties": {},
+        "title": "shoppingMethodId",
+        "x-ref": "ShippingMethod",
+        "description": "Refers to ShippingMethod"
+      },
+      "userId": {
+        "type": "object",
+        "properties": {},
+        "title": "userId",
+        "x-ref": "User",
+        "description": "Refers to User"
+      },
+      "shippingAddress": {
+        "type": "object",
+        "properties": {},
+        "title": "shippingAddress",
+        "x-ref": "UserAddress",
+        "description": "Refers to UserAddress"
+      },
+      "orderStatus": {
+        "type": "string",
+        "default": "Pending"
+      },
+      "paymentType": {
+        "type": "string",
+        "default": "Cash"
+      },
+      "orderTotal": {
+        "type": "number"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "orderStatus",
+      "paymentType"
+    ]
+  },
+  "OrderLine": {
+    "type": "object",
+    "properties": {
+      "productItemId": {
+        "type": "object",
+        "properties": {},
+        "title": "productItemId",
+        "x-ref": "ProductItem",
+        "description": "Refers to ProductItem"
+      },
+      "orderId": {
+        "type": "object",
+        "properties": {},
+        "title": "orderId",
+        "x-ref": "ShopOrder",
+        "description": "Refers to ShopOrder"
+      },
+      "qty": {
+        "type": "number",
+        "minimum": 1
+      },
+      "price": {
+        "type": "number",
+        "minimum": 0
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "productItemId",
+      "orderId",
+      "qty",
+      "price"
+    ]
+  },
+  "ShippingMethod": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "price": {
+        "type": "number"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    }
+  },
+  "ShoppingCart": {
+    "type": "object",
+    "properties": {
+      "userId": {
+        "type": "object",
+        "properties": {},
+        "title": "userId",
+        "x-ref": "User",
+        "description": "Refers to User"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "userId"
+    ]
+  },
+  "ShoppingCartItem": {
+    "type": "object",
+    "properties": {
+      "cartId": {
+        "type": "object",
+        "properties": {},
+        "title": "cartId",
+        "x-ref": "ShoppingCart",
+        "description": "Refers to ShoppingCart"
+      },
+      "productItemId": {
+        "type": "object",
+        "properties": {},
+        "title": "productItemId",
+        "x-ref": "ProductItem",
+        "description": "Refers to ProductItem"
+      },
+      "qty": {
+        "type": "number",
+        "minimum": 1
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "cartId",
+      "productItemId",
+      "qty"
+    ]
+  },
+  "Product": {
+    "type": "object",
+    "properties": {
+      "productName": {
+        "type": "string"
+      },
+      "thumbnails": {
+        "type": "array",
+        "items": {}
+      },
+      "content": {
+        "type": "string"
+      },
+      "categoryId": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {},
+        "title": "categoryId",
+        "x-ref": "ProductCategory",
+        "default": null,
+        "description": "Refers to ProductCategory"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    }
+  },
+  "ProductCategory": {
+    "type": "object",
+    "properties": {
+      "categoryName": {
+        "type": "string"
+      },
+      "parentCategory": {
+        "type": [
+          "object",
+          "null"
+        ],
+        "properties": {},
+        "title": "parentCategory",
+        "x-ref": "ProductCategory",
+        "default": null,
+        "description": "Refers to ProductCategory"
+      },
+      "thumbnail": {
+        "type": "string"
+      },
+      "status": {
+        "type": "boolean",
+        "default": true
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "ProductItem": {
+    "type": "object",
+    "properties": {
+      "productId": {
+        "type": "object",
+        "properties": {},
+        "title": "productId",
+        "x-ref": "Product",
+        "description": "Refers to Product"
+      },
+      "SKU": {
+        "type": "string"
+      },
+      "price": {
+        "type": "number"
+      },
+      "images": {
+        "type": "array",
+        "items": {}
+      },
+      "qtyInStock": {
+        "type": "number"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "productId",
+      "SKU"
+    ]
+  },
+  "ProductConfiguration": {
+    "type": "object",
+    "properties": {
+      "productItemId": {
+        "type": "object",
+        "properties": {},
+        "title": "productItemId",
+        "x-ref": "ProductItem",
+        "description": "Refers to ProductItem"
+      },
+      "variationOptionId": {
+        "type": "object",
+        "properties": {},
+        "title": "variationOptionId",
+        "x-ref": "VariationOption",
+        "description": "Refers to VariationOption"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    }
+  },
+  "CategoryVariation": {
+    "type": "object",
+    "properties": {
+      "categoryId": {
+        "type": "object",
+        "properties": {},
+        "title": "categoryId",
+        "x-ref": "ProductCategory",
+        "description": "Refers to ProductCategory"
+      },
+      "variationId": {
+        "type": "object",
+        "properties": {},
+        "title": "variationId",
+        "x-ref": "Variation",
+        "description": "Refers to Variation"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "Variation": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "isActive": {
+        "type": "boolean",
+        "default": true
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    }
+  },
+  "VariationOption": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "value": {
+        "type": "string"
+      },
+      "variationId": {
+        "type": "object",
+        "properties": {},
+        "title": "variationId",
+        "x-ref": "Variation",
+        "description": "Refers to Variation"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      }
+    },
+    "required": [
+      "name"
+    ]
+  },
+  "Promotion": {
+    "type": "object",
+    "properties": {
+      "name": {
+        "type": "string"
+      },
+      "description": {
+        "type": "string"
+      },
+      "discountType": {
+        "type": "string",
+        "default": "Percentage"
+      },
+      "discountValue": {
+        "type": "number",
+        "minimum": 0
+      },
+      "maxDiscountAmount": {
+        "type": "number",
+        "minimum": 0
+      },
+      "minOrderValue": {
+        "type": "number",
+        "minimum": 0,
+        "default": 0
+      },
+      "startDate": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "endDate": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "usageLimit": {
+        "type": "number",
+        "minimum": 0
+      },
+      "usedCount": {
+        "type": "number",
+        "minimum": 0,
+        "default": 0
+      },
+      "isActive": {
+        "type": "boolean",
+        "default": true
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "name",
+      "discountType",
+      "discountValue",
+      "startDate",
+      "endDate"
+    ]
+  },
+  "PromotionUsage": {
+    "type": "object",
+    "properties": {
+      "promotionId": {
+        "type": "object",
+        "properties": {},
+        "title": "promotionId",
+        "x-ref": "Promotion",
+        "description": "Refers to Promotion"
+      },
+      "userId": {
+        "type": "object",
+        "properties": {},
+        "title": "userId",
+        "x-ref": "User",
+        "description": "Refers to User"
+      },
+      "orderId": {
+        "type": "object",
+        "properties": {},
+        "title": "orderId",
+        "x-ref": "ShopOrder",
+        "description": "Refers to ShopOrder"
+      },
+      "discountAmount": {
+        "type": "number",
+        "minimum": 0
+      },
+      "usedAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "promotionId",
+      "userId",
+      "orderId",
+      "discountAmount",
+      "usedAt"
+    ]
+  },
+  "PromotionCategory": {
+    "type": "object",
+    "properties": {
+      "categoryId": {
+        "type": "object",
+        "properties": {},
+        "title": "categoryId",
+        "x-ref": "ProductCategory",
+        "description": "Refers to ProductCategory"
+      },
+      "promotionId": {
+        "type": "object",
+        "properties": {},
+        "title": "promotionId",
+        "x-ref": "Promotion",
+        "description": "Refers to Promotion"
+      },
+      "includeSubCategories": {
+        "type": "boolean",
+        "default": true
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "categoryId",
+      "promotionId"
+    ]
+  },
+  "PromotionProduct": {
+    "type": "object",
+    "properties": {
+      "productId": {
+        "type": "object",
+        "properties": {},
+        "title": "productId",
+        "x-ref": "Product",
+        "description": "Refers to Product"
+      },
+      "promotionId": {
+        "type": "object",
+        "properties": {},
+        "title": "promotionId",
+        "x-ref": "Promotion",
+        "description": "Refers to Promotion"
+      },
+      "_id": {
+        "type": "string",
+        "pattern": "^[0-9a-fA-F]{24}$"
+      },
+      "createdAt": {
+        "type": "string",
+        "format": "date-time"
+      },
+      "updatedAt": {
+        "type": "string",
+        "format": "date-time"
+      }
+    },
+    "required": [
+      "productId",
+      "promotionId"
+    ]
+  }
+}

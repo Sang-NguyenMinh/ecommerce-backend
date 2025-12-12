@@ -13,6 +13,9 @@ export class Product {
   thumbnails?: any[];
 
   @Prop()
+  price: number;
+
+  @Prop()
   content?: string;
 
   @Prop({ type: Types.ObjectId, ref: ProductCategory.name, default: null })

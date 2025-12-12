@@ -27,14 +27,12 @@ export class UserService {
     conditions: FilterQuery<UserDocument> = {},
     options: CustomOptions<UserDocument> = {},
   ) {
-    const user = await this.userModel.findOne(
-      { ...conditions },
-      options.fields,
-    );
+    const user = await this.userModel
+      .findOne({ ...conditions }, options.fields)
+      .lean();
     console.log(user);
     return user;
   }
-
   async create(createUserDto: CreateUserDto) {
     createUserDto.password = await this.bcryptService.hashPassword(
       createUserDto.password,

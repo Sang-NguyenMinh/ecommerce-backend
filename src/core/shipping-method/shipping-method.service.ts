@@ -1,73 +1,101 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { ShippingMethod } from './schemas/shipping-method.scheme';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
+
+import { BaseService } from '../base/base.service';
 import {
   CreateShippingMethodDto,
   UpdateShippingMethodDto,
 } from './dto/shipping-method.dto';
-import { FilterQuery, Model } from 'mongoose';
-import { InjectModel } from '@nestjs/mongoose';
-import { CustomOptions } from 'src/config/types';
+import {
+  ShippingMethod,
+  ShippingMethodDocument,
+} from './schemas/shipping-method.scheme';
 
 @Injectable()
-export class ShippingMethodService {
+export class ShippingMethodService extends BaseService<ShippingMethodDocument> {
   constructor(
     @InjectModel(ShippingMethod.name)
-    private shippingMethodModel: Model<ShippingMethod>,
-  ) {}
+    private shippingMethodModel: Model<ShippingMethodDocument>,
+  ) {
+    super(shippingMethodModel);
+  }
 
   async create(
-    createShippingMethodDto: CreateShippingMethodDto,
-  ): Promise<ShippingMethod> {
-    const newShippingMethod = new this.shippingMethodModel(
-      createShippingMethodDto,
-    );
-    return newShippingMethod.save();
+    createDto: CreateShippingMethodDto,
+  ): Promise<ShippingMethodDocument> {
+    try {
+      const created = new this.shippingMethodModel(createDto);
+      return await created.save();
+    } catch (error) {
+      console.error('Error creating shipping method:', error);
+      throw new HttpException(
+        'Error creating shipping method',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 
   async update(
-    updateShippingMethodDto: UpdateShippingMethodDto,
-  ): Promise<ShippingMethod> {
-    const { id, ...updateData } = updateShippingMethodDto;
-    const updatedShippingMethod =
-      await this.shippingMethodModel.findByIdAndUpdate(id, updateData, {
-        new: true,
-      });
-    if (!updatedShippingMethod) {
-      throw new NotFoundException('Shipping method not found');
+    id: string,
+    updateDto: UpdateShippingMethodDto,
+  ): Promise<ShippingMethodDocument> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
+      }
+
+      const updated = await this.shippingMethodModel.findByIdAndUpdate(
+        id,
+        updateDto,
+        { new: true, lean: false },
+      );
+
+      if (!updated) {
+        throw new HttpException(
+          'Shipping method not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return updated;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error updating shipping method:', error);
+      throw new HttpException(
+        'Error updating shipping method',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    return updatedShippingMethod;
   }
 
-  async findOne(id: string): Promise<ShippingMethod> {
-    const shippingMethod = await this.shippingMethodModel.findById(id);
-    if (!shippingMethod) {
-      throw new NotFoundException('Shipping method not found');
-    }
-    return shippingMethod;
-  }
+  async remove(id: string): Promise<{ message: string }> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
+      }
 
-  async findAll(
-    filter?: FilterQuery<ShippingMethod>,
-    options?: CustomOptions<ShippingMethod>,
-  ): Promise<{ shippingMethods: ShippingMethod[]; total: number }> {
-    const total = await this.shippingMethodModel.countDocuments({
-      ...filter,
-    });
-    const shippingMethods = await this.shippingMethodModel
-      .find({ ...filter }, { ...options })
-      .exec();
-    return {
-      shippingMethods,
-      total,
-    };
-  }
+      const deleted = await this.shippingMethodModel.findByIdAndDelete(id);
 
-  async remove(id: string) {
-    const deletedShippingMethod =
-      await this.shippingMethodModel.findByIdAndDelete(id);
-    if (!deletedShippingMethod) {
-      throw new NotFoundException('Shipping method not found');
+      if (!deleted) {
+        throw new HttpException(
+          'Shipping method not found',
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
+      return { message: 'Shipping method deleted successfully' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error deleting shipping method:', error);
+      throw new HttpException(
+        'Error deleting shipping method',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    return deletedShippingMethod;
   }
 }

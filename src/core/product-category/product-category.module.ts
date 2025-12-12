@@ -13,7 +13,7 @@ import { Product, ProductSchema } from '../product/schemas/product.schema';
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from '../category-variation/schemas/categoryVariation.schema';
+} from '../category-variation/schemas/category-variation.schema';
 
 @Module({
   imports: [
@@ -27,5 +27,6 @@ import {
   ],
   controllers: [ProductCategoryController],
   providers: [ProductCategoryService, CloudinaryService],
+  exports: [ProductCategoryService],
 })
 export class ProductCategoryModule {}

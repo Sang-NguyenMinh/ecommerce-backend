@@ -1,96 +1,106 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { UserAddress } from './schemas/user-address.schema';
-import { FilterQuery, Model } from 'mongoose';
+import { Model, Types } from 'mongoose';
+import {
+  UserAddress,
+  UserAddressDocument,
+} from './schemas/user-address.schema';
+import { BaseService } from '../base/base.service';
 import {
   CreateUserAddressDto,
   UpdateUserAddressDto,
 } from './dto/user-address.dto';
-import { CustomOptions } from 'src/config/types';
 
 @Injectable()
-export class UserAddressService {
+export class UserAddressService extends BaseService<UserAddressDocument> {
   constructor(
     @InjectModel(UserAddress.name)
-    private userAddressModel: Model<UserAddress>,
-  ) {}
+    private userAddressModel: Model<UserAddressDocument>,
+  ) {
+    super(userAddressModel);
+  }
 
-  async create(
-    createUserAddressDto: CreateUserAddressDto,
-  ): Promise<UserAddress> {
-    if (createUserAddressDto.isDefault) {
-      await this.userAddressModel.updateMany(
-        { userId: createUserAddressDto.userId },
-        { isDefault: false },
+  async create(createDto: CreateUserAddressDto): Promise<UserAddressDocument> {
+    try {
+      const created = new this.userAddressModel(createDto);
+      return await created.save();
+    } catch (error) {
+      console.error('Error creating user address:', error);
+      throw new HttpException(
+        'Error creating address',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
-
-    const newUserAddress = new this.userAddressModel(createUserAddressDto);
-    return newUserAddress.save();
   }
 
   async update(
-    updateUserAddressDto: UpdateUserAddressDto,
-  ): Promise<UserAddress> {
-    const { id, isDefault, ...updateData } = updateUserAddressDto;
-
-    if (isDefault) {
-      const existingAddress = await this.userAddressModel.findById(id);
-      if (!existingAddress) {
-        throw new NotFoundException('User Address not found');
+    id: string,
+    updateDto: UpdateUserAddressDto,
+  ): Promise<UserAddressDocument> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
       }
 
-      await this.userAddressModel.updateMany(
-        { userId: existingAddress.userId },
-        { isDefault: false },
+      const updated = await this.userAddressModel.findByIdAndUpdate(
+        id,
+        updateDto,
+        { new: true, lean: false },
+      );
+
+      if (!updated) {
+        throw new HttpException('Address not found', HttpStatus.NOT_FOUND);
+      }
+
+      return updated;
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error updating user address:', error);
+      throw new HttpException(
+        'Error updating address',
+        HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
+  }
 
-    const updatedUserAddress = await this.userAddressModel.findByIdAndUpdate(
-      id,
-      updateUserAddressDto,
-      { new: true },
-    );
-    if (!updatedUserAddress) {
-      throw new NotFoundException('User Address not found');
+  async remove(id: string): Promise<{ message: string }> {
+    try {
+      if (!Types.ObjectId.isValid(id)) {
+        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
+      }
+
+      const deleted = await this.userAddressModel.findByIdAndDelete(id);
+
+      if (!deleted) {
+        throw new HttpException('Address not found', HttpStatus.NOT_FOUND);
+      }
+
+      return { message: 'Address deleted successfully' };
+    } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+      console.error('Error deleting user address:', error);
+      throw new HttpException(
+        'Error deleting address',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
     }
-    return updatedUserAddress;
   }
 
-  async findOne(id: string): Promise<UserAddress> {
-    const userAddress = await this.userAddressModel
-      .findById(id)
-      .populate('userId');
-    if (!userAddress) {
-      throw new NotFoundException('User Address not found');
-    }
-    return userAddress;
-  }
-
-  async findByUser(userId: string): Promise<UserAddress[]> {
-    return this.userAddressModel.find({ userId }).sort({ isDefault: -1 });
-  }
-  async findAll(
-    filter?: FilterQuery<UserAddress>,
-    options?: CustomOptions<UserAddress>,
-  ): Promise<{ addresses: UserAddress[]; total: number }> {
-    const total = await this.userAddressModel.countDocuments({ ...filter });
-
-    const addresses = await this.userAddressModel
-      .find({ ...filter }, { ...options })
-      .populate('userId')
-      .exec();
-
-    return {
-      addresses,
-      total,
-    };
-  }
-
-  async remove(id: string): Promise<void> {
-    const result = await this.userAddressModel.findByIdAndDelete(id);
-    if (!result) {
-      throw new NotFoundException(`User Address #${id} not found`);
+  async getAddressByUserId(userId: string) {
+    try {
+      return await this.findAll(
+        { userId: userId, isActive: true },
+        {
+          sort: { createdAt: -1 },
+          lean: true,
+        },
+      );
+    } catch (error) {
+      console.error('Error getting user addresses:', error);
     }
   }
 }

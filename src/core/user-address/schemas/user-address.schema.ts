@@ -1,19 +1,33 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, Schema as HydratedDocument, Types } from 'mongoose';
-import { User } from 'src/core/user/schemas/user.schema';
+import { HydratedDocument, Types } from 'mongoose';
 
 export type UserAddressDocument = HydratedDocument<UserAddress>;
 
-@Schema()
-export class UserAddress extends Document {
-  @Prop({ type: Types.ObjectId, ref: User.name })
+@Schema({ timestamps: true })
+export class UserAddress {
+  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   userId: Types.ObjectId;
 
-  @Prop()
+  @Prop({ required: true })
+  recipientName: string;
+
+  @Prop({ required: true })
+  phoneNumber: string;
+
+  @Prop({ required: true })
   address: string;
 
+  @Prop({ required: true })
+  district: string;
+
+  @Prop({ required: true })
+  ward: string;
+
+  @Prop({ required: true })
+  city: string;
+
   @Prop({ default: true })
-  isDefault: boolean;
+  isActive: boolean;
 }
 
 export const UserAddressSchema = SchemaFactory.createForClass(UserAddress);

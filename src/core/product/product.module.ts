@@ -7,8 +7,11 @@ import { CloudinaryService } from 'src/shared/cloudinary.service';
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from '../category-variation/schemas/categoryVariation.schema';
+} from '../category-variation/schemas/category-variation.schema';
 import { CategoryVariationModule } from '../category-variation/categoryVariation.module';
+import { ProductItemSchema } from '../product-item/schemas/product-item.schema';
+import { ProductItemModule } from '../product-item/product-item.module';
+import { ProductCategoryModule } from '../product-category/product-category.module';
 
 @Module({
   imports: [
@@ -17,6 +20,8 @@ import { CategoryVariationModule } from '../category-variation/categoryVariation
       { name: CategoryVariation.name, schema: CategoryVariationSchema },
     ]),
     forwardRef(() => CategoryVariationModule),
+    forwardRef(() => ProductItemModule),
+    forwardRef(() => ProductCategoryModule),
   ],
   controllers: [ProductController],
   providers: [ProductService, CloudinaryService],

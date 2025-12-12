@@ -10,7 +10,7 @@ import { CategoryVariationModule } from '../category-variation/categoryVariation
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from '../category-variation/schemas/categoryVariation.schema';
+} from '../category-variation/schemas/category-variation.schema';
 
 @Module({
   imports: [

@@ -84,6 +84,7 @@ export class ProductCategoryController extends BaseController<
       }
       let thumbnailUrl: string | undefined;
 
+      console.log('Uploaded file:', createProductCategoryDto);
       if (file) {
         const uploadedImage = await this.cloudinaryService.uploadImage(file);
         thumbnailUrl = uploadedImage.secure_url;

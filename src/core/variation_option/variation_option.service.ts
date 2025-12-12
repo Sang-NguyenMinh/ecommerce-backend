@@ -66,9 +66,7 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
       await this.categoryVariationService.getByCategoryId(categoryId)
     ).map((variation) => variation.variationId);
 
-    const variationIds = variations.map((variation) =>
-      variation._id.toString(),
-    );
+    const variationIds = variations.map((variation) => variation._id);
 
     const variationOptions = await this.variationOptionModel.find({
       variationId: { $in: variationIds },
@@ -77,7 +75,7 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     const variationsMap = new Map();
 
     variations.forEach((variation: any) => {
-      const variationKey = variation._id.toString();
+      const variationKey = variation._id;
       variationsMap.set(variationKey, {
         variation: variation,
         options: [],
@@ -85,7 +83,7 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     });
 
     variationOptions.forEach((option) => {
-      const variationId = option.variationId.toString();
+      const variationId = option.variationId;
       const variation = variationsMap.get(variationId);
 
       if (variation) {
@@ -100,7 +98,9 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     return Array.from(variationsMap.values());
   }
 
-  async findByVariationIds(variationIds: string[]): Promise<VariationOption[]> {
+  async findByVariationIds(
+    variationIds: Types.ObjectId[],
+  ): Promise<VariationOption[]> {
     const result = await this.variationOptionModel
       .find({
         variationId: { $in: variationIds },
@@ -109,10 +109,12 @@ export class VariationOptionService extends BaseService<VariationOptionDocument>
     return result;
   }
 
-  async findByVariationId(variationId: string): Promise<VariationOption[]> {
+  async findByVariationId(
+    variationId: Types.ObjectId,
+  ): Promise<VariationOption[]> {
     return this.variationOptionModel
       .find({
-        variationId: variationId.toString(),
+        variationId: variationId,
       })
       .exec();
   }

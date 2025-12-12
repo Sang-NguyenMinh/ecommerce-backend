@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsMongoId, IsInt, Min, IsOptional } from 'class-validator';
+import { IsMongoId, IsInt, Min, IsOptional, IsNumber } from 'class-validator';
 
 export class CreateOrderLineDto {
   @ApiProperty({
@@ -9,13 +9,16 @@ export class CreateOrderLineDto {
   @IsMongoId()
   productItemId: string;
 
-  @ApiProperty({ example: '65f25a3d6e4b3b001c2d5a8e', description: 'Order ID' })
+  @ApiProperty({
+    example: '65f25a3d6e4b3b001c2d5a8e',
+    description: 'Order ID',
+  })
   @IsMongoId()
   orderId: string;
 
   @ApiProperty({
     example: 2,
-    description: 'Quantity of the product item',
+    description: 'Số lượng sản phẩm',
     minimum: 1,
   })
   @IsInt()
@@ -23,10 +26,11 @@ export class CreateOrderLineDto {
   qty: number;
 
   @ApiProperty({
-    example: 49.99,
-    description: 'Price of the product item',
+    example: 49000,
+    description: 'Giá sản phẩm (VNĐ)',
     minimum: 0,
   })
+  @IsNumber()
   @Min(0)
   price: number;
 }
@@ -34,14 +38,7 @@ export class CreateOrderLineDto {
 export class UpdateOrderLineDto {
   @ApiPropertyOptional({
     example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'Order Line ID',
-  })
-  @IsMongoId()
-  id: string;
-
-  @ApiPropertyOptional({
-    example: '65f25a3d6e4b3b001c2d5a8e',
-    description: 'Updated Product Item ID',
+    description: 'Product Item ID',
   })
   @IsOptional()
   @IsMongoId()
@@ -49,7 +46,7 @@ export class UpdateOrderLineDto {
 
   @ApiPropertyOptional({
     example: 3,
-    description: 'Updated quantity of the product item',
+    description: 'Số lượng sản phẩm',
     minimum: 1,
   })
   @IsOptional()
@@ -58,11 +55,12 @@ export class UpdateOrderLineDto {
   qty?: number;
 
   @ApiPropertyOptional({
-    example: 59.99,
-    description: 'Updated price of the product item',
+    example: 59000,
+    description: 'Giá sản phẩm (VNĐ)',
     minimum: 0,
   })
   @IsOptional()
+  @IsNumber()
   @Min(0)
   price?: number;
 }

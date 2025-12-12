@@ -13,6 +13,11 @@ async function bootstrap() {
 
   const port = configService.get('PORT');
   const httpAdapter = app.get(HttpAdapterHost);
+
+  app.enableCors({
+    origin: ['https://your-nextjs-app.vercel.app', 'http://localhost:3000'],
+    credentials: true,
+  });
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   app.setGlobalPrefix('api/v1', { exclude: [''] });

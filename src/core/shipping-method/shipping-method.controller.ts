@@ -6,46 +6,77 @@ import {
   Patch,
   Param,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { ShippingMethodService } from './shipping-method.service';
+import { ApiBearerAuth, ApiParam, ApiResponse, ApiTags } from '@nestjs/swagger';
+import { BaseController } from '../base/base.controller';
 import {
   CreateShippingMethodDto,
   UpdateShippingMethodDto,
 } from './dto/shipping-method.dto';
-import { Roles } from 'src/decorators/customize';
-import { ApiBearerAuth } from '@nestjs/swagger';
+import { BaseQueryDto } from '../base/base.dto';
+import { BaseQueryResult } from '../base/base.service';
+import { ShippingMethodDocument } from './schemas/shipping-method.scheme';
 
+@ApiTags('Shipping Method')
 @ApiBearerAuth()
 @Controller('shipping-method')
-export class ShippingMethodController {
-  constructor(private readonly shippingMethodService: ShippingMethodService) {}
+export class ShippingMethodController extends BaseController<
+  ShippingMethodDocument,
+  ShippingMethodService
+> {
+  constructor(private readonly shippingMethodService: ShippingMethodService) {
+    // searchFields: tìm kiếm theo tên
+    super(shippingMethodService, 'shipping-method', ['name']);
+  }
 
-  @Roles('Admin')
   @Post()
-  create(@Body() createShippingMethodDto: CreateShippingMethodDto) {
-    return this.shippingMethodService.create(createShippingMethodDto);
+  @ApiResponse({
+    status: 201,
+    description: 'Shipping method created successfully',
+  })
+  @ApiResponse({ status: 400, description: 'Bad request' })
+  async create(@Body() createDto: CreateShippingMethodDto) {
+    return this.shippingMethodService.create(createDto);
   }
 
   @Get()
-  findAll() {
-    return this.shippingMethodService.findAll();
-  }
+  @ApiResponse({
+    status: 200,
+    description: 'Get all shipping methods successfully',
+  })
+  async findAll(
+    @Query() queryDto: BaseQueryDto,
+  ): Promise<BaseQueryResult<ShippingMethodDocument>> {
+    const filter = this.buildFilter(queryDto);
+    const options = this.buildOptions(queryDto);
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.shippingMethodService.findOne(id);
+    return await this.shippingMethodService.findAll(filter, options);
   }
 
   @Patch(':id')
-  update(
+  @ApiParam({ name: 'id', description: 'Shipping method ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Shipping method updated successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Shipping method not found' })
+  async update(
     @Param('id') id: string,
-    @Body() updateShippingMethodDto: UpdateShippingMethodDto,
+    @Body() updateDto: UpdateShippingMethodDto,
   ) {
-    return this.shippingMethodService.update(updateShippingMethodDto);
+    return this.shippingMethodService.update(id, updateDto);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  @ApiParam({ name: 'id', description: 'Shipping method ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Shipping method deleted successfully',
+  })
+  @ApiResponse({ status: 404, description: 'Shipping method not found' })
+  async remove(@Param('id') id: string) {
     return this.shippingMethodService.remove(id);
   }
 }

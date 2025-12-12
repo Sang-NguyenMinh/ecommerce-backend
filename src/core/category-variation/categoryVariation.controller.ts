@@ -8,7 +8,7 @@ import {
   UpdateCategoryVariationDto,
 } from './dto/categoryVariation.dto';
 import { BaseController } from '../base/base.controller';
-import { CategoryVariationDocument } from './schemas/categoryVariation.schema';
+import { CategoryVariationDocument } from './schemas/category-variation.schema';
 import { FilterQuery, Types } from 'mongoose';
 
 @ApiBearerAuth()

@@ -3,6 +3,7 @@ import { ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Document, FilterQuery, Types } from 'mongoose';
 import { BaseService, BaseQueryResult, BaseSelectOption } from './base.service';
 import { BaseQueryDto } from './base.dto';
+import { Public } from 'src/decorators/customize';
 
 export abstract class BaseController<
   T extends Document,
@@ -15,6 +16,7 @@ export abstract class BaseController<
   ) {}
 
   @Get()
+  @Public()
   @ApiResponse({ status: 200, description: 'Success' })
   async findAll(@Query() queryDto: BaseQueryDto): Promise<BaseQueryResult<T>> {
     const filter = this.buildFilter(queryDto);
@@ -65,7 +67,7 @@ export abstract class BaseController<
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
   async findOne(@Param('id') id: string): Promise<T> {
-    const result = await this.service.findById(id, {
+    const result = await this.service.findById(new Types.ObjectId(id), {
       errThrowing: true,
       errMessage: `${this.entityName} not found`,
     });

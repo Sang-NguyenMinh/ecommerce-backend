@@ -6,7 +6,7 @@ import { Variation, VariationSchema } from './schemas/variation.schema';
 import {
   CategoryVariation,
   CategoryVariationSchema,
-} from '../category-variation/schemas/categoryVariation.schema';
+} from '../category-variation/schemas/category-variation.schema';
 import {
   VariationOption,
   VariationOptionSchema,
