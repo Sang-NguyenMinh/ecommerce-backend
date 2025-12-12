@@ -2,7 +2,7 @@ declare const module: any;
 
 import { HttpAdapterHost, NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
-import { ConfigService } from '@nestjs/config';
+import { ConfigService } from '@nestjs/config/dist/config.service';
 import { ValidationPipe } from '@nestjs/common';
 import { AllExceptionsFilter } from './filter/all-exceptions.filter';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
@@ -11,13 +11,9 @@ async function bootstrap() {
 
   const configService = app.get(ConfigService);
 
-  const port = configService.get('PORT');
+  const port = configService.get('PORT') || process.env.PORT || 8080;
   const httpAdapter = app.get(HttpAdapterHost);
 
-  app.enableCors({
-    origin: ['https://your-nextjs-app.vercel.app', 'http://localhost:3000'],
-    credentials: true,
-  });
   app.useGlobalFilters(new AllExceptionsFilter(httpAdapter));
 
   app.setGlobalPrefix('api/v1', { exclude: [''] });
@@ -28,8 +24,10 @@ async function bootstrap() {
       forbidNonWhitelisted: true,
     }),
   );
-  app.enableCors();
-
+  app.enableCors({
+    origin: ['https://your-nextjs-app.vercel.app', 'http://localhost:3000'],
+    credentials: true,
+  });
   const config = new DocumentBuilder()
     .setTitle('API Documentation')
     .setDescription('The API description')
@@ -39,8 +37,7 @@ async function bootstrap() {
 
   const document = SwaggerModule.createDocument(app, config);
   SwaggerModule.setup('api', app, document);
-
-  await app.listen(port ?? '8080');
+  await app.listen(port, '0.0.0.0');
 
   if (module.hot) {
     module.hot.accept();
