@@ -25,7 +25,12 @@ async function bootstrap() {
     }),
   );
   app.enableCors({
-    origin: ['https://your-nextjs-app.vercel.app', 'http://localhost:3000'],
+    origin: [
+      'https://your-nextjs-app.vercel.app',
+      'http://localhost:3000',
+      'http://localhost:3001',
+      'https://ecommerce-frontend-xi-murex.vercel.app/',
+    ],
     credentials: true,
   });
   const config = new DocumentBuilder()
