@@ -14,9 +14,6 @@ import { ShopOrderModule } from '../shop-order/shop-order.module';
   ],
   controllers: [OrderLineController],
   providers: [OrderLineService],
-  exports: [
-    OrderLineService,
-    MongooseModule, // Export MongooseModule để ShopOrderModule có thể dùng OrderLineModel
-  ],
+  exports: [OrderLineService, MongooseModule],
 })
 export class OrderLineModule {}

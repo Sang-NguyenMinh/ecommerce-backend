@@ -9,7 +9,6 @@ import {
   CategoryVariationSchema,
 } from '../category-variation/schemas/category-variation.schema';
 import { CategoryVariationModule } from '../category-variation/categoryVariation.module';
-import { ProductItemSchema } from '../product-item/schemas/product-item.schema';
 import { ProductItemModule } from '../product-item/product-item.module';
 import { ProductCategoryModule } from '../product-category/product-category.module';
 

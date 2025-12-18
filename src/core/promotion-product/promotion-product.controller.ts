@@ -27,17 +27,4 @@ export class PromotionProductController extends BaseController<
     console.log(createPromotionProductDto);
     return this.promotionProductService.create(createPromotionProductDto);
   }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePromotionProductDto: UpdatePromotionProductDto,
-  ) {
-    return this.promotionProductService.update(updatePromotionProductDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.promotionProductService.remove(id);
-  }
 }

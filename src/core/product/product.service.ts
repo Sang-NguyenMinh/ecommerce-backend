@@ -16,7 +16,6 @@ import {
 } from '../base/base.service';
 import { CategoryVariationService } from '../category-variation/categoryVariation.service';
 import { ProductItemService } from '../product-item/product-item.service';
-import { ProductCategory } from '../product-category/schemas/product-category.schema';
 import { ProductCategoryService } from '../product-category/product-category.service';
 
 @Injectable()
@@ -65,7 +64,6 @@ export class ProductService extends BaseService<ProductDocument> {
         null,
       );
 
-    // Group product items by productId
     const productItemsByProductId = productItemsResult.data.reduce(
       (acc, item: any) => {
         const productId = item.productId._id;
@@ -78,11 +76,9 @@ export class ProductService extends BaseService<ProductDocument> {
       {},
     );
 
-    // Enrich products with their items and variations
     const enrichedData = result.data.map((product: any) => {
       const items = productItemsByProductId[product._id] || [];
 
-      // Extract unique variations from all product items
       const variationsMap = new Map();
 
       items.forEach((item: any) => {
@@ -136,20 +132,15 @@ export class ProductService extends BaseService<ProductDocument> {
         content: product.content,
         categoryId: product.categoryId,
 
-        // Product variations (colors, sizes, etc.)
         variations: Array.from(variationsMap.values()),
 
-        // Price information
         price,
 
-        // Stock information
         totalStock,
         inStock: totalStock > 0,
 
-        // Product items count
         itemsCount: items.length,
 
-        // All product items (SKUs with specific color/size combinations)
         items: items.map((item: any) => ({
           _id: item._id,
           SKU: item.SKU,
@@ -181,7 +172,6 @@ export class ProductService extends BaseService<ProductDocument> {
     products: any[];
     totalProducts: number;
   }> {
-    // Get category information
     const category = await this.productCategoryService.findById(
       new Types.ObjectId(categoryId),
     );
@@ -190,7 +180,6 @@ export class ProductService extends BaseService<ProductDocument> {
       throw new NotFoundException(`Category with ID ${categoryId} not found`);
     }
 
-    // Get products by categoryId
     const productsResult = await this.findAll(
       { categoryId: new Types.ObjectId(categoryId) },
       {
@@ -234,7 +223,6 @@ export class ProductService extends BaseService<ProductDocument> {
 
     const items = productItemsResult.data || [];
 
-    // Extract unique variations from all product items
     const variationsMap = new Map();
     items.forEach((item: any) => {
       if (item.configurations) {
@@ -272,12 +260,10 @@ export class ProductService extends BaseService<ProductDocument> {
       }
     });
 
-    // Get total stock
     const totalStock = items.reduce((sum: number, item: any) => {
       return sum + (item.qtyInStock || 0);
     }, 0);
 
-    // Get first available price
     const price = items.length > 0 ? items[0].price : 0;
 
     return {
@@ -287,20 +273,11 @@ export class ProductService extends BaseService<ProductDocument> {
       content: product.content,
       categoryId: product.categoryId,
 
-      // Product variations (colors, sizes, etc.)
       variations: Array.from(variationsMap.values()),
-
-      // Price information
       price,
-
-      // Stock information
       totalStock,
       inStock: totalStock > 0,
-
-      // Product items count
       itemsCount: items.length,
-
-      // All product items (SKUs with specific color/size combinations)
       items: items.map((item: any) => ({
         _id: item._id,
         SKU: item.SKU,
@@ -345,11 +322,6 @@ export class ProductService extends BaseService<ProductDocument> {
         throw new NotFoundException(`Product with ID ${id} not found`);
       }
 
-      console.log('Product updated successfully:', {
-        id: updatedProduct._id,
-        thumbnailsCount: updatedProduct.thumbnails?.length || 0,
-      });
-
       return updatedProduct;
     } catch (error) {
       if (
@@ -371,201 +343,3 @@ export class ProductService extends BaseService<ProductDocument> {
     }
   }
 }
-
-[
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be255' },
-    productId: { $oid: '69247a91085b688c8783b39f' },
-    SKU: 'Jogger-Thun-XL-DEN',
-    price: 450000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778363/e-commerce/p2yg3vynjplsxioftrtp.jpg',
-    ],
-    qtyInStock: 30,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:55:00.000Z' },
-    updatedAt: { $date: '2025-11-24T15:55:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be256' },
-    productId: { $oid: '69247a91085b688c8783b39f' },
-    SKU: 'Jogger-Thun-L-XAM',
-    price: 450000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1751349536/e-commerce/lw169t7cncnvu3ixkak8.webp',
-    ],
-    qtyInStock: 25,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:55:30.000Z' },
-    updatedAt: { $date: '2025-11-24T15:55:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be257' },
-    productId: { $oid: '69247a91085b688c8783b39f' },
-    SKU: 'Jogger-Thun-M-DEN',
-    price: 450000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778709/e-commerce/ducru4zxomnk6cmfzyru.webp',
-    ],
-    qtyInStock: 35,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:56:00.000Z' },
-    updatedAt: { $date: '2025-11-24T15:56:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be258' },
-    productId: { $oid: '69247a91085b688c8783b39e' },
-    SKU: 'Thun-CoTim-XL-TRANG',
-    price: 280000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778511/e-commerce/jlfe3apkjlmackxzxleu.webp',
-    ],
-    qtyInStock: 20,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:56:30.000Z' },
-    updatedAt: { $date: '2025-11-24T15:56:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be259' },
-    productId: { $oid: '69247a91085b688c8783b39e' },
-    SKU: 'Thun-CoTim-L-DEN',
-    price: 280000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778709/e-commerce/ducru4zxomnk6cmfzyru.webp',
-    ],
-    qtyInStock: 28,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:57:00.000Z' },
-    updatedAt: { $date: '2025-11-24T15:57:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25a' },
-    productId: { $oid: '69247a91085b688c8783b39e' },
-    SKU: 'Thun-CoTim-M-XANH',
-    price: 280000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1751349536/e-commerce/lw169t7cncnvu3ixkak8.webp',
-    ],
-    qtyInStock: 32,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:57:30.000Z' },
-    updatedAt: { $date: '2025-11-24T15:57:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25b' },
-    productId: { $oid: '69247a91085b688c8783b39d' },
-    SKU: 'Polo-Pique-XL-XAM',
-    price: 390000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778630/e-commerce/phdwtkh7cyrbpmh8o4tv.webp',
-    ],
-    qtyInStock: 15,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:58:00.000Z' },
-    updatedAt: { $date: '2025-11-24T15:58:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25c' },
-    productId: { $oid: '69247a91085b688c8783b39d' },
-    SKU: 'Polo-Pique-L-DO',
-    price: 390000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1751349536/e-commerce/lw169t7cncnvu3ixkak8.webp',
-    ],
-    qtyInStock: 22,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:58:30.000Z' },
-    updatedAt: { $date: '2025-11-24T15:58:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25d' },
-    productId: { $oid: '69247a91085b688c8783b39d' },
-    SKU: 'Polo-Pique-M-XAM',
-    price: 390000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778709/e-commerce/ducru4zxomnk6cmfzyru.webp',
-    ],
-    qtyInStock: 18,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:59:00.000Z' },
-    updatedAt: { $date: '2025-11-24T15:59:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25e' },
-    productId: { $oid: '69247a91085b688c8783b39c' },
-    SKU: 'Jeans-Dai-32-XANHDAM',
-    price: 520000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778709/e-commerce/ducru4zxomnk6cmfzyru.webp',
-    ],
-    qtyInStock: 12,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T15:59:30.000Z' },
-    updatedAt: { $date: '2025-11-24T15:59:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be25f' },
-    productId: { $oid: '69247a91085b688c8783b39c' },
-    SKU: 'Jeans-Dai-30-XANHDEN',
-    price: 520000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778363/e-commerce/p2yg3vynjplsxioftrtp.jpg',
-    ],
-    qtyInStock: 16,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T16:00:00.000Z' },
-    updatedAt: { $date: '2025-11-24T16:00:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be260' },
-    productId: { $oid: '69247a91085b688c8783b39c' },
-    SKU: 'Jeans-Dai-34-XANHDAM',
-    price: 520000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1751349536/e-commerce/lw169t7cncnvu3ixkak8.webp',
-    ],
-    qtyInStock: 10,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T16:00:30.000Z' },
-    updatedAt: { $date: '2025-11-24T16:00:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be261' },
-    productId: { $oid: '69247a91085b688c8783b39b' },
-    SKU: 'Kaki-Dai-32-DEN',
-    price: 480000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778363/e-commerce/p2yg3vynjplsxioftrtp.jpg',
-    ],
-    qtyInStock: 20,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T16:01:00.000Z' },
-    updatedAt: { $date: '2025-11-24T16:01:00.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be262' },
-    productId: { $oid: '69247a91085b688c8783b39b' },
-    SKU: 'Kaki-Dai-30-XANHDEN',
-    price: 480000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1751349536/e-commerce/lw169t7cncnvu3ixkak8.webp',
-    ],
-    qtyInStock: 25,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T16:01:30.000Z' },
-    updatedAt: { $date: '2025-11-24T16:01:30.000Z' },
-  },
-  {
-    _id: { $oid: '692560ccf27c4ebcb61be263' },
-    productId: { $oid: '69247a91085b688c8783b39b' },
-    SKU: 'Kaki-Dai-28-NAU',
-    price: 480000,
-    images: [
-      'https://res.cloudinary.com/ddrrh2cxt/image/upload/v1749778709/e-commerce/ducru4zxomnk6cmfzyru.webp',
-    ],
-    qtyInStock: 30,
-    __v: 0,
-    createdAt: { $date: '2025-11-24T16:02:00.000Z' },
-    updatedAt: { $date: '2025-11-24T16:02:00.000Z' },
-  },
-];

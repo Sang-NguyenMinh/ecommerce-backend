@@ -65,31 +65,6 @@ export class UserAddressService extends BaseService<UserAddressDocument> {
     }
   }
 
-  async remove(id: string): Promise<{ message: string }> {
-    try {
-      if (!Types.ObjectId.isValid(id)) {
-        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
-      }
-
-      const deleted = await this.userAddressModel.findByIdAndDelete(id);
-
-      if (!deleted) {
-        throw new HttpException('Address not found', HttpStatus.NOT_FOUND);
-      }
-
-      return { message: 'Address deleted successfully' };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      console.error('Error deleting user address:', error);
-      throw new HttpException(
-        'Error deleting address',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
   async getAddressByUserId(userId: string) {
     try {
       return await this.findAll(

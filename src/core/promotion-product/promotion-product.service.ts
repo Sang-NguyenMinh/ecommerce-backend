@@ -25,27 +25,4 @@ export class PromotionProductService extends BaseService<PromotionProductDocumen
   ): Promise<PromotionProduct> {
     return this.promotionProductModel.create(createDto);
   }
-
-  async update(
-    updateDto: UpdatePromotionProductDto,
-  ): Promise<PromotionProduct> {
-    const promotionProduct = await this.promotionProductModel.findByIdAndUpdate(
-      updateDto.id,
-      updateDto,
-      {
-        new: true,
-      },
-    );
-    if (!promotionProduct)
-      throw new NotFoundException('Promotion Product not found');
-    return promotionProduct;
-  }
-
-  async remove(id: string) {
-    const promotionProduct =
-      await this.promotionProductModel.findByIdAndDelete(id);
-    if (!promotionProduct)
-      throw new NotFoundException('Promotion Product not found');
-    return promotionProduct;
-  }
 }

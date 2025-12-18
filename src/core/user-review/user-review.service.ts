@@ -59,11 +59,4 @@ export class UserReviewService {
       total,
     };
   }
-
-  async remove(id: string): Promise<void> {
-    const userReview = await this.userReviewModel.findByIdAndDelete(id);
-    if (!userReview) {
-      throw new NotFoundException('User Review not found');
-    }
-  }
 }

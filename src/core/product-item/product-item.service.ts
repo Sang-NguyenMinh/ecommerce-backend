@@ -131,14 +131,13 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
   ) {
     const productItem = await this.findById(id, {
       ...options,
-      populate: ['productId'], // populate product info
+      populate: ['productId'],
     });
 
     if (!productItem) {
       return null;
     }
 
-    // Lấy configurations cho product item này
     const configurations = await this.productConfigurationService.findAll(
       { productItemId: productItem._id },
       {
@@ -178,7 +177,6 @@ export class ProductItemService extends BaseService<ProductItemDocument> {
       },
     );
 
-    // Transform data để dễ sử dụng hơn
     return configurations.data.map((config) => ({
       configurationId: config._id,
       variation: {

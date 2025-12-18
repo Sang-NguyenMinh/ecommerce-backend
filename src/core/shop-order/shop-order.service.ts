@@ -41,7 +41,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
     session.startTransaction();
 
     try {
-      // Validate order items first
       if (!createDto.orderItems || createDto.orderItems.length === 0) {
         throw new HttpException(
           'Order must have at least one item',
@@ -49,7 +48,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         );
       }
 
-      // Calculate order total
       const orderTotal = createDto.orderItems.reduce((sum, item) => {
         return sum + item.price * item.qty;
       }, 0);
@@ -61,7 +59,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         shippingMethodId: createDto.shippingMethodId,
       };
 
-      // Handle GUEST ORDER
       if (createDto.isGuestOrder) {
         if (
           !createDto.guestEmail ||
@@ -94,7 +91,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
           );
         }
 
-        // Check if user has existing addresses
         const userAddresses = await this.userAddressModel
           .find({
             userId: new Types.ObjectId(createDto.userId),
@@ -106,7 +102,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         let shippingAddressId: Types.ObjectId;
 
         if (userAddresses.length === 0) {
-          // FIRST-TIME USER - Create new address from form data
           if (
             !createDto.recipientName ||
             !createDto.phoneNumber ||
@@ -131,7 +126,7 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
                 city: createDto.city,
                 district: createDto.district,
                 ward: createDto.ward,
-                isDefault: true, // First address is default
+                isDefault: true,
                 isActive: true,
               },
             ],
@@ -142,7 +137,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         } else {
           // EXISTING USER - Use provided address or default
           if (createDto.shippingAddress) {
-            // Validate that the provided address belongs to this user
             const addressExists = userAddresses.some(
               (addr) => addr._id.toString() === createDto.shippingAddress,
             );
@@ -154,7 +148,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
             }
             shippingAddressId = new Types.ObjectId(createDto.shippingAddress);
           } else {
-            // Use default address or first address
             const defaultAddress = userAddresses[0];
             shippingAddressId = defaultAddress._id as Types.ObjectId;
           }
@@ -168,12 +161,10 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         };
       }
 
-      // Create the order
       const [order] = await this.shopOrderModel.create([orderData], {
         session,
       });
 
-      // Create order lines
       const orderLines = createDto.orderItems.map((item) => ({
         orderId: order._id,
         productItemId: new Types.ObjectId(item.productItemId),
@@ -207,7 +198,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
             context: emailContext,
           });
         } else {
-          // For user orders, populate address info
           const addressInfo = await this.userAddressModel
             .findById(order.shippingAddress)
             .lean();
@@ -229,7 +219,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         }
       } catch (emailError) {
         console.error('Error sending order confirmation email:', emailError);
-        // Don't fail the order creation if email fails
       }
 
       return {
@@ -276,7 +265,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         );
       }
 
-      // Get order lines
       const orderLines = await this.orderLineModel
         .find({ orderId: order._id })
         .populate('productItemId')
@@ -348,7 +336,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
         { session },
       );
 
-      // Delete order
       const deleted = await this.shopOrderModel.findByIdAndDelete(id, {
         session,
       });

@@ -68,15 +68,4 @@ export class ShippingMethodController extends BaseController<
   ) {
     return this.shippingMethodService.update(id, updateDto);
   }
-
-  @Delete(':id')
-  @ApiParam({ name: 'id', description: 'Shipping method ID' })
-  @ApiResponse({
-    status: 200,
-    description: 'Shipping method deleted successfully',
-  })
-  @ApiResponse({ status: 404, description: 'Shipping method not found' })
-  async remove(@Param('id') id: string) {
-    return this.shippingMethodService.remove(id);
-  }
 }

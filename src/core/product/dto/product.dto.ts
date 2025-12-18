@@ -99,8 +99,7 @@ export class UpdateProductDto {
 
   @ApiPropertyOptional({
     description: 'Existing thumbnail URLs to keep (as JSON string or array)',
-    example:
-      '["https://example.com/image1.jpg", "https://example.com/image2.jpg"]',
+    example: '["https://example.com/image1.jpg"',
   })
   @IsOptional()
   @Transform(({ value }) => {

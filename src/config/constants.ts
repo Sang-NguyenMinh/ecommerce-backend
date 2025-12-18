@@ -10,13 +10,13 @@ export enum ACCOUNT_TYPE {
 }
 
 export enum OrderStatusEnum {
-  PENDING = 'PENDING', // Chờ xác nhận
-  CONFIRMED = 'CONFIRMED', // Đã xác nhận
-  PROCESSING = 'PROCESSING', // Đang xử lý
-  SHIPPING = 'SHIPPING', // Đang giao hàng
-  DELIVERED = 'DELIVERED', // Đã giao hàng
-  CANCELLED = 'CANCELLED', // Đã hủy
-  RETURNED = 'RETURNED', // Đã trả hàng
+  PENDING = 'PENDING',
+  CONFIRMED = 'CONFIRMED',
+  PROCESSING = 'PROCESSING',
+  SHIPPING = 'SHIPPING',
+  DELIVERED = 'DELIVERED',
+  CANCELLED = 'CANCELLED',
+  RETURNED = 'RETURNED',
 }
 
 export enum PaymentTypeEnum {

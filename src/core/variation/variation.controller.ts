@@ -21,17 +21,4 @@ export class VariationController extends BaseController<
   create(@Body() createVariationDto: CreateVariationDto) {
     return this.variationService.create(createVariationDto);
   }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateVariationDto: UpdateVariationDto,
-  ) {
-    return this.variationService.update(id, updateVariationDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.variationService.remove(id);
-  }
 }

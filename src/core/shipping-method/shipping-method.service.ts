@@ -70,32 +70,4 @@ export class ShippingMethodService extends BaseService<ShippingMethodDocument> {
       );
     }
   }
-
-  async remove(id: string): Promise<{ message: string }> {
-    try {
-      if (!Types.ObjectId.isValid(id)) {
-        throw new HttpException('Invalid ID format', HttpStatus.BAD_REQUEST);
-      }
-
-      const deleted = await this.shippingMethodModel.findByIdAndDelete(id);
-
-      if (!deleted) {
-        throw new HttpException(
-          'Shipping method not found',
-          HttpStatus.NOT_FOUND,
-        );
-      }
-
-      return { message: 'Shipping method deleted successfully' };
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-      console.error('Error deleting shipping method:', error);
-      throw new HttpException(
-        'Error deleting shipping method',
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
 }

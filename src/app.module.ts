@@ -26,6 +26,7 @@ import { AuthsModule } from './auths/auths.module';
 import { BaseModule } from './core/base/base.module';
 import { CategoryVariationModule } from './core/category-variation/categoryVariation.module';
 import { PromotionUsageModule } from './core/promotion-usage/promotion-usage.module';
+import { PaymentModule } from './core/momo/payment.module';
 @Module({
   imports: [
     OrderLineModule,
@@ -47,6 +48,7 @@ import { PromotionUsageModule } from './core/promotion-usage/promotion-usage.mod
     CategoryVariationModule,
     AuthsModule,
     BaseModule,
+    PaymentModule,
     ConfigModule.forRoot({ isGlobal: true }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],

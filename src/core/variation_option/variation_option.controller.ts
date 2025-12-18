@@ -35,19 +35,6 @@ export class VariationOptionController extends BaseController<
     return this.variationOptionService.create(createVariationOptionDto);
   }
 
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updateVariationOptionDto: UpdateVariationOptionDto,
-  ) {
-    return this.variationOptionService.update(updateVariationOptionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.variationOptionService.remove(id);
-  }
-
   @Get('by_category/:id')
   getVariationOptionsByCategoryId(@Param('id') categoryId: string) {
     return this.variationOptionService.getVariationOptionsByCategoryId(

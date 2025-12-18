@@ -20,23 +20,4 @@ export class PromotionCategoryController extends BaseController<
   ) {
     super(promotionCategoryService, 'promotion-category', ['name']);
   }
-
-  @Roles('Admin')
-  @Post()
-  create(@Body() createPromotionCategoryDto: CreatePromotionCategoryDto) {
-    return this.promotionCategoryService.create(createPromotionCategoryDto);
-  }
-
-  @Patch(':id')
-  update(
-    @Param('id') id: string,
-    @Body() updatePromotionCategoryDto: UpdatePromotionCategoryDto,
-  ) {
-    return this.promotionCategoryService.update(updatePromotionCategoryDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.promotionCategoryService.delete(id);
-  }
 }

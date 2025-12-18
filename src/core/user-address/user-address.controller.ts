@@ -72,14 +72,6 @@ export class UserAddressController extends BaseController<
     return this.userAddressService.update(id, updateDto);
   }
 
-  @Delete(':id')
-  @ApiParam({ name: 'id', description: 'Address ID' })
-  @ApiResponse({ status: 200, description: 'Address deleted successfully' })
-  @ApiResponse({ status: 404, description: 'Address not found' })
-  async remove(@Param('id') id: string) {
-    return this.userAddressService.remove(id);
-  }
-
   // Override buildFilter nếu cần thêm filter đặc biệt
   protected buildFilter(
     queryDto: BaseQueryDto,

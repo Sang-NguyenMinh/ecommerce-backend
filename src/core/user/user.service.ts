@@ -30,7 +30,6 @@ export class UserService {
     const user = await this.userModel
       .findOne({ ...conditions }, options.fields)
       .lean();
-    console.log(user);
     return user;
   }
   async create(createUserDto: CreateUserDto) {

@@ -29,14 +29,4 @@ export class PromotionController extends BaseController<
   async create(@Body() createPromotionDto: CreatePromotionDto) {
     return this.promotionService.create(createPromotionDto);
   }
-
-  @Patch()
-  async update(@Body() updatePromotionDto: UpdatePromotionDto) {
-    return this.promotionService.update(updatePromotionDto);
-  }
-
-  @Delete(':id')
-  remove(@Param('id') id: string) {
-    return this.promotionService.remove(id);
-  }
 }

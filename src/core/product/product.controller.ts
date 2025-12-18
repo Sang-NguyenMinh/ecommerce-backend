@@ -154,13 +154,11 @@ export class ProductController extends BaseController<
   ): FilterQuery<ProductDocument> {
     const filter: any = {};
     console.log('Building product filter with query DTO:', queryDto);
-    // Search by product name
     if (queryDto.search || queryDto.productName) {
       const searchTerm = queryDto.search || queryDto.productName;
       filter.productName = { $regex: searchTerm, $options: 'i' };
     }
 
-    // Filter by categoryId
     if (queryDto.categoryId) {
       if (Types.ObjectId.isValid(queryDto.categoryId)) {
         filter.categoryId = new Types.ObjectId(queryDto.categoryId);
@@ -172,7 +170,6 @@ export class ProductController extends BaseController<
 
     // Filter by stock status (cũng cần xử lý ở service level)
 
-    // Date range filter
     if (queryDto.dateFrom || queryDto.dateTo) {
       Object.assign(
         filter,
@@ -184,7 +181,6 @@ export class ProductController extends BaseController<
       );
     }
 
-    // Active status filter
     if (queryDto.isActive !== undefined) {
       filter.isActive = queryDto.isActive;
     }
