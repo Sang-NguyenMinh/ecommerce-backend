@@ -1,3 +1,5 @@
+import { Param } from '@nestjs/common';
+import { PaymentController } from './../core/momo/payment.controller';
 export enum ROLES {
   ADMIN = 'Admin',
   OWNER = ' Owner',
@@ -10,6 +12,9 @@ export enum ACCOUNT_TYPE {
 }
 
 export enum OrderStatusEnum {
+  PAYMENT_FAILED = 'PAYMENT_FAILED',
+  PAYMENT_PENDING = 'PAYMENT_PENDING',
+  PAYMENT_SUCCESS = 'PAYMENT_SUCCESS',
   PENDING = 'PENDING',
   CONFIRMED = 'CONFIRMED',
   PROCESSING = 'PROCESSING',

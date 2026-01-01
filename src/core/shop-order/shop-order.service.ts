@@ -12,7 +12,7 @@ import {
   UpdateShopOrderDto,
   TrackGuestOrderDto,
 } from './dto/shop-order.dto';
-import { OrderStatusEnum } from 'src/config/constants';
+import { OrderStatusEnum, PaymentTypeEnum } from 'src/config/constants';
 import { randomBytes } from 'crypto';
 import { MailerService } from '@nestjs-modules/mailer';
 import {
@@ -53,7 +53,10 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
       }, 0);
 
       let orderData: any = {
-        orderStatus: createDto.orderStatus || OrderStatusEnum.PENDING,
+        orderStatus:
+          createDto.paymentType == PaymentTypeEnum.CASH
+            ? OrderStatusEnum.PENDING
+            : OrderStatusEnum.PAYMENT_PENDING,
         paymentType: createDto.paymentType,
         orderTotal,
         shippingMethodId: createDto.shippingMethodId,
@@ -174,52 +177,52 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
 
       await this.orderLineModel.insertMany(orderLines, { session });
 
-      await session.commitTransaction();
+      await await session.commitTransaction();
 
       // Send confirmation email
-      try {
-        const emailContext: any = {
-          orderId: order._id,
-          orderTotal: order.orderTotal,
-          orderItems: createDto.orderItems,
-          orderDate: new Date().toLocaleDateString('vi-VN'),
-          trackingUrl: `http://localhost:3000/track-order?orderId=${order._id}`,
-        };
+      // try {
+      //   const emailContext: any = {
+      //     orderId: order._id,
+      //     orderTotal: order.orderTotal,
+      //     orderItems: createDto.orderItems,
+      //     orderDate: new Date().toLocaleDateString('vi-VN'),
+      //     trackingUrl: `http://localhost:3000/track-order?orderId=${order._id}`,
+      //   };
 
-        if (createDto.isGuestOrder) {
-          emailContext.name = order.guestName;
-          emailContext.shippingAddress = order.guestShippingAddress;
+      //   if (createDto.isGuestOrder) {
+      //     emailContext.name = order.guestName;
+      //     emailContext.shippingAddress = order.guestShippingAddress;
 
-          await this.mailerService.sendMail({
-            from: 'msang.nms@gmail.com',
-            to: order.guestEmail,
-            subject: 'Xác nhận đơn hàng',
-            template: 'order-confirmation',
-            context: emailContext,
-          });
-        } else {
-          const addressInfo = await this.userAddressModel
-            .findById(order.shippingAddress)
-            .lean();
+      //     await this.mailerService.sendMail({
+      //       from: 'msang.nms@gmail.com',
+      //       to: order.guestEmail,
+      //       subject: 'Xác nhận đơn hàng',
+      //       template: 'order-confirmation',
+      //       context: emailContext,
+      //     });
+      //   } else {
+      //     const addressInfo = await this.userAddressModel
+      //       .findById(order.shippingAddress)
+      //       .lean();
 
-          emailContext.name = addressInfo?.recipientName || 'Khách hàng';
-          emailContext.shippingAddress = `${addressInfo?.address}, ${addressInfo?.ward}, ${addressInfo?.district}, ${addressInfo?.city}`;
+      //     emailContext.name = addressInfo?.recipientName || 'Khách hàng';
+      //     emailContext.shippingAddress = `${addressInfo?.address}, ${addressInfo?.ward}, ${addressInfo?.district}, ${addressInfo?.city}`;
 
-          // Get user email (you might need to inject UserService for this)
-          // For now, using guestEmail if provided
-          const recipientEmail = createDto.guestEmail || 'nmsang.dev@gmail.com';
+      //     // Get user email (you might need to inject UserService for this)
+      //     // For now, using guestEmail if provided
+      //     const recipientEmail = createDto.guestEmail || 'nmsang.dev@gmail.com';
 
-          await this.mailerService.sendMail({
-            from: 'msang.nms@gmail.com',
-            to: recipientEmail,
-            subject: 'Xác nhận đơn hàng',
-            template: 'order-confirmation',
-            context: emailContext,
-          });
-        }
-      } catch (emailError) {
-        console.error('Error sending order confirmation email:', emailError);
-      }
+      //     await this.mailerService.sendMail({
+      //       from: 'msang.nms@gmail.com',
+      //       to: recipientEmail,
+      //       subject: 'Xác nhận đơn hàng',
+      //       template: 'order-confirmation',
+      //       context: emailContext,
+      //     });
+      //   }
+      // } catch (emailError) {
+      //   console.error('Error sending order confirmation email:', emailError);
+      // }
 
       return {
         order: {
@@ -247,6 +250,36 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
     } finally {
       session.endSession();
     }
+  }
+  async markOrderPaid(payload: {
+    orderId: string;
+    transId: string;
+    paidAt: Date;
+  }) {
+    console.log('đánh dấy ok');
+    return this.shopOrderModel.updateOne(
+      { _id: payload.orderId },
+      {
+        $set: {
+          orderStatus: OrderStatusEnum.PENDING,
+          transactionId: payload.transId,
+          paidAt: payload.paidAt,
+        },
+      },
+    );
+  }
+
+  async updatePaymentFailed(orderId: string, resultCode: string) {
+    return this.shopOrderModel.updateOne(
+      { _id: orderId },
+      {
+        $set: {
+          paymentStatus: 'FAILED',
+          orderStatus: OrderStatusEnum.PAYMENT_FAILED,
+          paymentFailReason: resultCode,
+        },
+      },
+    );
   }
 
   async trackGuestOrder(trackDto: TrackGuestOrderDto): Promise<any> {
@@ -364,10 +397,6 @@ export class ShopOrderService extends BaseService<ShopOrderDocument> {
 
   async getOrdersByUserId(userId: string) {
     try {
-      if (!Types.ObjectId.isValid(userId)) {
-        throw new HttpException('Invalid user ID', HttpStatus.BAD_REQUEST);
-      }
-
       return await this.findAll(
         { userId: new Types.ObjectId(userId), isActive: true },
         {

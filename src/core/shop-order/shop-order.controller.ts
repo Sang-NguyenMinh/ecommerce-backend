@@ -7,6 +7,8 @@ import {
   Param,
   Delete,
   Query,
+  HttpException,
+  HttpStatus,
 } from '@nestjs/common';
 import { ShopOrderService } from './shop-order.service';
 import {
@@ -26,7 +28,9 @@ import {
 import { BaseQueryDto } from '../base/base.dto';
 import { FilterQuery } from 'mongoose';
 import { BaseQueryResult } from '../base/base.service';
-import { OrderStatusEnum } from 'src/config/constants';
+import { OrderStatusEnum, PaymentTypeEnum } from 'src/config/constants';
+import { Public } from 'src/decorators/customize';
+import { MomoService } from '../momo/payment.service';
 
 @ApiTags('Shop Order')
 @Controller('shop-order')
@@ -34,7 +38,10 @@ export class ShopOrderController extends BaseController<
   ShopOrderDocument,
   ShopOrderService
 > {
-  constructor(private readonly shopOrderService: ShopOrderService) {
+  constructor(
+    private readonly shopOrderService: ShopOrderService,
+    private readonly momoService: MomoService,
+  ) {
     super(shopOrderService, 'shop-order', []);
   }
 
@@ -43,8 +50,6 @@ export class ShopOrderController extends BaseController<
     summary: 'Create order (Guest or User)',
     description: 'Create order for guest (without login) or authenticated user',
   })
-  @ApiResponse({ status: 201, description: 'Order created successfully' })
-  @ApiResponse({ status: 400, description: 'Bad request' })
   async create(@Body() createDto: CreateShopOrderDto) {
     return this.shopOrderService.create(createDto);
   }
@@ -70,6 +75,68 @@ export class ShopOrderController extends BaseController<
     const options = this.buildOptions(queryDto);
 
     return await this.shopOrderService.findAll(filter, options);
+  }
+
+  @Post('checkout')
+  @Public()
+  async checkout(@Body() dto: CreateShopOrderDto) {
+    const result = await this.shopOrderService.create(dto);
+    const order = result.order;
+
+    if (dto.paymentType === PaymentTypeEnum.CASH) {
+      return {
+        success: true,
+        orderId: order._id,
+        message: 'Order created. Pay on delivery.',
+      };
+    }
+
+    const payment = await this.momoService.createPayment(
+      order._id.toString(),
+      1000,
+      `Thanh toán đơn hàng #${order._id}`,
+    );
+
+    if (payment.resultCode !== 0) {
+      throw new HttpException(
+        'Failed to create payment link',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return {
+      success: true,
+      orderId: order._id,
+      payUrl: payment.payUrl,
+      deeplink: payment.deeplink,
+      qrCodeUrl: payment.qrCodeUrl,
+    };
+  }
+
+  @Post('momo-ipn')
+  @Public()
+  async momoIPN(@Body() body: any) {
+    console.log('vào ipn', body);
+    const isValid = this.momoService.verifyIPNSignature(body);
+    if (!isValid) {
+      return { resultCode: 1, message: 'Invalid signature' };
+    }
+
+    console.log('vào ipn', body);
+    const { orderId, resultCode, amount, transId } = body;
+
+    if (resultCode !== 0 && resultCode !== 9000) {
+      await this.shopOrderService.updatePaymentFailed(orderId, resultCode);
+      return { resultCode: 0 };
+    }
+
+    await this.shopOrderService.markOrderPaid({
+      orderId,
+      transId,
+      paidAt: new Date(),
+    });
+
+    return { resultCode: 0 };
   }
 
   @Get('user/:userId')

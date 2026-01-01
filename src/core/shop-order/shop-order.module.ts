@@ -13,16 +13,19 @@ import {
   UserAddress,
   UserAddressSchema,
 } from '../user-address/schemas/user-address.schema';
+import { MomoService } from '../momo/payment.service';
+import { PaymentModule } from '../momo/payment.module';
 
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: ShopOrder.name, schema: ShopOrderSchema },
-      { name: OrderLine.name, schema: OrderLineSchema }, // Thêm OrderLine schema
+      { name: OrderLine.name, schema: OrderLineSchema },
       { name: UserAddress.name, schema: UserAddressSchema },
     ]),
     forwardRef(() => OrderLineModule),
     forwardRef(() => UserAddressModule),
+    PaymentModule,
   ],
   controllers: [ShopOrderController],
   providers: [ShopOrderService],

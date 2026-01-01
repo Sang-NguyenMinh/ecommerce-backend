@@ -9,59 +9,52 @@ export class MomoService {
   private readonly secretKey = 'at67qH6mk8w5Y1nAyMoYKMWACiEi2bsa';
   private readonly endpoint =
     'https://test-payment.momo.vn/v2/gateway/api/create';
-  private readonly redirectUrl = 'http://localhost:3000/payment/momo-return';
-  private readonly ipnUrl = 'http://localhost:3000/payment/momo-ipn';
+  private readonly redirectUrl =
+    'https://03a47a2182ca.ngrok-free.app/api/v1/payment/momo-return';
+  private readonly ipnUrl =
+    'https://03a47a2182ca.ngrok-free.app/api/v1/shop-order/momo-ipn';
 
-  /**
-   * Tạo payment request với MoMo
-   */
   async createPayment(orderId: string, amount: number, orderInfo: string) {
-    const requestId = orderId;
+    const requestId = `${orderId}_${Date.now()}`;
     const requestType = 'captureWallet';
-    const extraData = ''; // Có thể thêm data tùy chỉnh
+    const extraData = '';
 
-    // Tạo raw signature
-    const rawSignature = `accessKey=${this.accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${this.ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${this.partnerCode}&redirectUrl=${this.redirectUrl}&requestId=${requestId}&requestType=${requestType}`;
-
-    // Tạo signature bằng HMAC SHA256
+    const rawSignature =
+      `accessKey=${this.accessKey}` +
+      `&amount=${amount}` +
+      `&extraData=${extraData}` +
+      `&ipnUrl=${this.ipnUrl}` +
+      `&orderId=${orderId}` +
+      `&orderInfo=${orderInfo}` +
+      `&partnerCode=${this.partnerCode}` +
+      `&redirectUrl=${this.redirectUrl}` +
+      `&requestId=${requestId}` +
+      `&requestType=${requestType}`;
     const signature = crypto
       .createHmac('sha256', this.secretKey)
       .update(rawSignature)
       .digest('hex');
 
-    // Request body gửi đến MoMo
-    const requestBody = {
+    const body = {
       partnerCode: this.partnerCode,
       accessKey: this.accessKey,
-      requestId: requestId,
+      requestId,
       amount: amount.toString(),
-      orderId: orderId,
-      orderInfo: orderInfo,
+      orderId,
+      orderInfo,
       redirectUrl: this.redirectUrl,
       ipnUrl: this.ipnUrl,
-      extraData: extraData,
-      requestType: requestType,
-      signature: signature,
+      extraData,
+      requestType,
+      signature,
       lang: 'vi',
     };
 
-    try {
-      const response = await axios.post(this.endpoint, requestBody, {
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      return response.data;
-    } catch (error) {
-      throw new Error(`MoMo API Error: ${error.message}`);
-    }
+    const { data } = await axios.post(this.endpoint, body);
+    return data;
   }
 
-  /**
-   * Verify signature từ MoMo callback
-   */
-  verifySignature(data: any): boolean {
+  verifyIPNSignature(data: any): boolean {
     const {
       partnerCode,
       orderId,
@@ -78,21 +71,81 @@ export class MomoService {
       signature,
     } = data;
 
-    // Tạo raw signature để verify
-    const rawSignature = `accessKey=${this.accessKey}&amount=${amount}&extraData=${extraData}&message=${message}&orderId=${orderId}&orderInfo=${orderInfo}&orderType=${orderType}&partnerCode=${partnerCode}&payType=${payType}&requestId=${requestId}&responseTime=${responseTime}&resultCode=${resultCode}&transId=${transId}`;
+    // Thứ tự fields cho IPN theo docs MoMo
+    const rawSignature =
+      `accessKey=${this.accessKey}` +
+      `&amount=${amount}` +
+      `&extraData=${extraData || ''}` +
+      `&message=${message}` +
+      `&orderId=${orderId}` +
+      `&orderInfo=${orderInfo}` +
+      `&orderType=${orderType}` +
+      `&partnerCode=${partnerCode}` +
+      `&payType=${payType}` +
+      `&requestId=${requestId}` +
+      `&responseTime=${responseTime}` +
+      `&resultCode=${resultCode}` +
+      `&transId=${transId}`;
 
-    // Tạo signature để so sánh
-    const generatedSignature = crypto
+    const expectedSignature = crypto
       .createHmac('sha256', this.secretKey)
       .update(rawSignature)
       .digest('hex');
 
-    return signature === generatedSignature;
+    console.log('Expected signature:', expectedSignature);
+    console.log('Received signature:', signature);
+    console.log('Match:', signature === expectedSignature);
+
+    return signature === expectedSignature;
   }
 
-  /**
-   * Kiểm tra trạng thái thanh toán
-   */
+  verifyReturnSignature(data: any): boolean {
+    const {
+      partnerCode,
+      orderId,
+      requestId,
+      amount,
+      orderInfo,
+      orderType,
+      transId,
+      resultCode,
+      message,
+      payType,
+      responseTime,
+      extraData,
+      signature,
+    } = data;
+
+    console.log('Verifying Return signature...');
+
+    // Thứ tự fields cho Return URL
+    const rawSignature =
+      `accessKey=${this.accessKey}` +
+      `&amount=${amount}` +
+      `&extraData=${extraData || ''}` +
+      `&message=${message}` +
+      `&orderId=${orderId}` +
+      `&orderInfo=${orderInfo}` +
+      `&orderType=${orderType}` +
+      `&partnerCode=${partnerCode}` +
+      `&payType=${payType}` +
+      `&requestId=${requestId}` +
+      `&responseTime=${responseTime}` +
+      `&resultCode=${resultCode}` +
+      `&transId=${transId}`;
+
+    const expectedSignature = crypto
+      .createHmac('sha256', this.secretKey)
+      .update(rawSignature)
+      .digest('hex');
+
+    console.log('Expected signature:', expectedSignature);
+    console.log('Received signature:', signature);
+
+    return signature === expectedSignature;
+  }
+
+  //Kiểm tra trạng thái thanh toán
   checkTransactionStatus(resultCode: string): {
     success: boolean;
     message: string;

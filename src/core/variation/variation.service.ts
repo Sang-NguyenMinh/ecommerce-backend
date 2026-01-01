@@ -63,7 +63,7 @@ export class VariationService extends BaseService<VariationDocument> {
 
       const optionsMap = new Map();
       variationOptions.forEach((option) => {
-        const variationId = option.variationId;
+        const variationId = option.variationId.toString();
         if (!optionsMap.has(variationId)) {
           optionsMap.set(variationId, []);
         }
@@ -71,8 +71,7 @@ export class VariationService extends BaseService<VariationDocument> {
       });
 
       const enrichedData = variationResult.data.map((variation) => {
-        const variationIdStr = variation._id;
-        const options = optionsMap.get(variationIdStr) || [];
+        const options = optionsMap.get(variation._id.toString()) || [];
 
         return {
           ...variation,
