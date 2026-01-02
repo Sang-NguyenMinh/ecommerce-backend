@@ -142,6 +142,7 @@ export class ProductController extends BaseController<
   }
 
   @Get('category/:categoryId')
+  @Public()
   async getProductsByCategory(
     @Param('categoryId') categoryId: string,
     @Query() query: any,

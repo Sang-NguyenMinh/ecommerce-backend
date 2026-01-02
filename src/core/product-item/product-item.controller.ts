@@ -17,7 +17,7 @@ import {
   ProductItemQueryDto,
   UpdateProductItemDto,
 } from './dto/product-item.dto';
-import { Roles } from 'src/decorators/customize';
+import { Public, Roles } from 'src/decorators/customize';
 import {
   ApiBearerAuth,
   ApiConsumes,
@@ -77,6 +77,7 @@ export class ProductItemController extends BaseController<
   @Get()
   @ApiOperation({ summary: 'Get all product items with variations' })
   @ApiResponse({ status: 200, description: 'Success' })
+  @Public()
   async findAll(@Query() queryDto: ProductItemQueryDto) {
     const filter = this.buildProductItemFilter(queryDto);
     const options = this.buildOptions(queryDto);
@@ -88,6 +89,7 @@ export class ProductItemController extends BaseController<
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
+  @Public()
   async findOne(@Param('id') id: string): Promise<any> {
     const result = await this.productItemService.findByIdWithVariations(
       new Types.ObjectId(id),
