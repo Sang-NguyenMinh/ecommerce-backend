@@ -63,6 +63,7 @@ export abstract class BaseController<
   }
 
   @Get(':id')
+  @Public()
   @ApiParam({ name: 'id' })
   @ApiResponse({ status: 200, description: 'Success' })
   @ApiResponse({ status: 404, description: 'Not found' })
