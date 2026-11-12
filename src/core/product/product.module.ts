@@ -20,7 +20,6 @@ import { ProductCategoryModule } from '../product-category/product-category.modu
     ]),
     forwardRef(() => CategoryVariationModule),
     forwardRef(() => ProductItemModule),
-    forwardRef(() => ProductCategoryModule),
   ],
   controllers: [ProductController],
   providers: [ProductService, CloudinaryService],
